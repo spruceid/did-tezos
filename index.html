@@ -95,7 +95,7 @@
         scalability. These improvements can enhance DID and Verifiable
         Credential functionality and performance.</li>
     <li><b>Up to date</b>: Tezos has a 15-second block clearing time, which
-        is able to ensure that resolved Tezos-based DID Documents are up to
+        is able to ensure that resolved Tezos-based DID documents are up to
         date within reasonable time bounds for many use cases.</li>
     <li><b>Formally verifiable</b>: Michelson, the virtual machine language
         used by Tezos, is designed to facilitate formal verification using
@@ -322,7 +322,7 @@ digit       = %x30-39  ; 0-9
     <section>
     <h2>Architecture</h2>
     <p> The objective for the Tezos DID Method is to utilize Tezos accounts and
-        smart contract addresses in a coherent manner to manage DID Documents
+        smart contract addresses in a coherent manner to manage DID documents
         while adhering to this document's Design Criteria, including security,
         privacy, and simplicity. For simplicity, Tezos DIDs only support a
         single active public key and service endpoint at a time. In this
@@ -338,13 +338,13 @@ digit       = %x30-39  ; 0-9
       <li>Implied DID Document.</li>
       <li>Corresponding on-chain protocol-level key rotations.</li>
       <li>Corresponding on-chain smart contract known as a DID Manager.</li>
-      <li>Corresponding off-chain DID Document signed updates.</li>
+      <li>Corresponding off-chain DID document signed updates.</li>
     </ol>
-    <p> DID resolvers move sequentially through each layer of data source to
-        incrementally build a DID Document, and they fail upon the first
-        encountered inconsistency, producing an error result and no DID
-        Document. Success can only be achieved after processing all the layers
-        of data sources.
+    <p> DID resolvers must move sequentially through all resolution layers to
+        incrementally build a DID document and therefore complete DID
+        resolution, and they fail upon the first encountered inconsistency,
+        producing an error result and no DID document. Success can only be
+        achieved after processing all the layers of data sources.
 
     <section> <!-- h4 -->
     <h4>Absence of data sources</h4>
@@ -384,17 +384,17 @@ digit       = %x30-39  ; 0-9
 
     <section>
     <h4>Deriving DID Documents</h4>
-    <p> At this resolution layer, DID Document is derived by <i>implying</i>
+    <p> At this resolution layer, DID document is derived by <i>implying</i>
         values from a Tezos account address-based DID, such as
         <code>did:tz:mainnet:tz1TzrmTBSuiVHV2VfMnGRMYvTEPCP42oSM8</code>, which
         matches the <code>account</code> and optional <code>network</code>
         rules in the DID Scheme ABNF. This value is then used within the DID
-        Document <code>authentication</code> section as the
+        document <code>authentication</code> section as the
         <a href="https://w3c-ccg.github.io/security-vocab/#blockchainAccountId"><code>blockchainAccountId</code></a>
         as specified in the
         <a href="https://w3c-ccg.github.io/security-vocab/">Security Vocab</a>.
         A DID resolver could take the example DID and generate the following
-        DID Document without incorporating any data from blockchain
+        DID document without incorporating any data from blockchain
         transactions:
     </p>
     <code><pre>
