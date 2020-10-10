@@ -336,8 +336,8 @@ digit       = %x30-39  ; 0-9
         of data sources, known as resolution layers:</p>
     <ol>
       <li>Implied DID Document.</li>
-      <li>Corresponding on-chain smart contract known as a DID Manager.</li>
       <li>Corresponding on-chain protocol-level key rotations.</li>
+      <li>Corresponding on-chain smart contract known as a DID Manager.</li>
       <li>Corresponding off-chain DID Document signed updates.</li>
     </ol>
     <p> DID resolvers move sequentially through each layer of data source to
@@ -427,6 +427,12 @@ digit       = %x30-39  ; 0-9
        into existing signature suites, if any.</p>
     </section> <!-- h4 -->
     </section> <!-- h3 -->
+    <section> <!-- h3 -->
+    <h3>On-chain protocol-level key rotations</h3>
+    <p> This functionality is expected to become available with the Sapling
+        protocol upgrade.
+    </p>
+    </section>
     <section> <!-- h3 -->
     <h3>DID Manager Smart Contract</h3>
     <p> DID Managers are smart contracts on the Tezos blockchain that implement
