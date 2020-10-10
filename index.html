@@ -341,10 +341,10 @@ digit       = %x30-39  ; 0-9
       <li>Corresponding off-chain DID document signed updates.</li>
     </ol>
     <p> DID resolvers must move sequentially through all resolution layers to
-        incrementally build a DID document and therefore complete DID
-        resolution, and they fail upon the first encountered inconsistency,
-        producing an error result and no DID document. Success can only be
-        achieved after processing all the layers of data sources.
+        incrementally build a DID document, and they fail upon the first
+        encountered inconsistency, producing an error result and no DID
+        document. Success can only be achieved after processing all resolution
+        layers.
 
     <section> <!-- h4 -->
     <h4>Absence of data sources</h4>
