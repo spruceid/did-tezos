@@ -464,10 +464,10 @@ getService :: () => Service
         signature of the data produced by concatenating the byte
         representations of the current value, next value, and current rotation
         count. The current rotation count is defined as the sum total of
-        successfully executed calls to both <code>rotatePublicKey</code> and
-        <code>rotateServiceEndpoint</code> to date. For example, if each
-        function were successfully executed exactly once, the current rotation
-        count would be two.
+        successfully executed calls to both <code>rotateAuthentication</code>
+        and <code>rotateService</code> to date. For example, if each function
+        were successfully executed exactly once, the current rotation count
+        would be two.
     </p>
 
     <p> <code>getAuthentication</code> returns the verifiation method for
@@ -504,12 +504,13 @@ getService :: () => Service
     </section>
     <section>
     <h4>Deriving DID Documents</h4>
-    <p> The key and its type are produced by calling the
-        <code>getPublicKey</code> smart contract function. No input parameters are
-        required. The single service endpoint and its type is retrieved by
-        calling the <code>getServiceEndpoint</code> smart contract function.
-        These values are the only smart contract-sourced data used for Tezos
-        DID resolution, and are substituted into a valid DID document.
+    <p> The verification method used for authentication is produced by calling
+        the <code>getAuthentication</code> smart contract function. No input
+        parameters are required. The single service endpoint and its type is
+        retrieved by calling the <code>getService</code> smart contract
+        function.  These values are the only smart contract-sourced data used
+        for Tezos DID resolution, and are substituted into a valid DID
+        document.
     </p>
 <code><pre>
 {
