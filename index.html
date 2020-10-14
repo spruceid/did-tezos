@@ -23,13 +23,15 @@
 </head>
 <body>
   <section id='abstract'>
-  <p> Tezos is an open-source blockchain protocol that is self-amending and
-      uses a virtual machine language called Michelson, which is designed to
-      support formal verification using proof assistants. It can be used for
-      DID creation and management compatible with the issuance, storage, and
-      verification of Verifiable Credentials, achieving a pragmatic balance
-      across privacy, decentralization, and accessibility for general purpose
-      use in Internet scale consumer and B2B applications.</p>
+    <p> <a href="https://gitlab.com/tezos/tezos">Tezos</a> is an open-source
+        blockchain protocol that has a formalized process for upgrades and uses
+        a virtual machine language called Michelson, which is designed to
+        support formal verification using proof assistants. It can be used for
+        DID creation and management compatible with the issuance, storage, and
+        verification of Verifiable Credentials, achieving a pragmatic balance
+        across privacy, decentralization, and accessibility for general purpose
+        use in Internet scale consumer and B2B applications.
+  </p>
   </section>
   <section id='sotd'></section>
   <!-- introduction -->
@@ -69,10 +71,10 @@
   <ul>
     <li><b>Public and highly available</b>: The Tezos <code>mainnet</code>
         instance has thousands of independently controlled active nodes
-        able to share full transaction histories with any requesting peer,
-        requiring only an Internet connection. This allows DIDs based on
-        Tezos transactions, such as those created by the method described
-        in this document, to achieve high accessibility and
+        and validators able to share full transaction histories with any
+        requesting peer, requiring only an Internet connection. This allows
+        DIDs based on Tezos transactions, such as those created by the method
+        described in this document, to achieve high accessibility and
         availability.</li>
     <li><b>Permissionless</b>: Anyone is able to also write to the Tezos
         blockchain instances using the <code>XTZ</code> cryptocurrency to
@@ -80,27 +82,29 @@
         directly from any peer possessing it, and it is also widely
         available for purchase on major cryptocurrency exchanges. In an
         upcoming protocol upgrade, <a>permits</a> will allow for third
-        parties to pay transaction fees for others.</li>
+        parties to pay transaction fees on behalf of others.</li>
     <li><b>Censorship resistant</b>: The protocol uses cryptography to
-        maintain integrity across all transactions, and the transaction
-        history may be fully replicated from any single node out of
-        thousands, using commodity hardware. The cost to attack the network
-        is suitably expensive for many use cases, as described in the following
-        section.</li>
+        maintain integrity across all transactions, and the transaction history
+        may be fully replicated from any single node out of thousands, using
+        commodity hardware. The integrity of the network is maintained using a
+        proof of stake consensus algorithm, and the cost to attack the network
+        is prohibitively expensive for many attack vectors, as described in the
+        following section.</li>
     <li><b>Upgradable</b>: The Tezos protocol and virtual machine language
         Michelson can be upgraded without disruption to the network, and this
-        has been completed successfully eight times since its launch. For
-        example, an upcoming protocol upgrade is adding shielded transactions
-        to the base protocol to enable privacy-enhanced operations and
-        scalability. These improvements can enhance DID and Verifiable
-        Credential functionality and performance.</li>
-    <li><b>Up to date</b>: Tezos has a 15-second block clearing time, which
-        is able to ensure that resolved Tezos-based DID documents are up to
-        date within reasonable time bounds for many use cases.</li>
+        has been completed successfully eight times since its launch, with
+        mechanisms to correct for human errors. To illustrate new features
+        available via protocol upgrades, an upcoming protocol upgrade is adding
+        shielded transactions to the base protocol to enable privacy-enhanced
+        operations and scalability. These improvements can enhance DID and
+        Verifiable Credential functionality and performance.</li>
+    <li><b>Up to date</b>: Tezos has a 60-second block time, which is able to
+        ensure that resolved Tezos-based DID documents are up to date within
+        reasonable time bounds for many use cases.</li>
     <li><b>Formally verifiable</b>: Michelson, the virtual machine language
         used by Tezos, is designed to facilitate formal verification using
         proof assistant frameworks, such as Mi-Cho-Coq. It is possible to
-        formally verify properties of software used for DID management, or
+        formally verify some properties of software used for DID management, or
         even to create a full specification.</li>
   </ul>
   </section>
@@ -141,8 +145,8 @@
             artifacts as possible, providing off-chain alternatives that are
             more peer-to-peer when possible.</li>
         <li><b>Usable and compatible</b>. It will be interoperable with
-            existing DID methods, adjacent standards, and DIDs using this
-            method will be widely resolvable.</li>
+            existing DID methods and adjacent standards. DIDs using this method
+            will be widely resolvable.</li>
       </ul>
     </section>
     <section>
@@ -181,20 +185,9 @@ digit       = %x30-39  ; 0-9
          <br/> <br/> The <code>network</code> rule MAY be used to indicate
          which Tezos instance the DID references. If it is not present, then
          the instance is assumed to be <code>mainnet</code>. Other known test
-         networks include <code>dalphanet</code>, <code>testnet</code>,
-         <code>labnet</code>, and number of test networks is expected to
+         networks include <code>dalphanet</code>, <code>carthage</code>,
+         and <code>labnet</code>. The number of test networks is expected to
          grow.</p>
-      <section>
-      <h4>Note: network specifier format undecided</h4>
-      <p>It's undecided whether we should specify the Tezos instance using the
-         syntax above:
-         <code>tz:carthage:tz1TzrmTBSuiVHV2VfMnGRMYvTEPCP42oSM8</code>, or
-         use a different notation such as described in the emerging standard
-         <a href="https://github.com/ChainAgnostic/CAIPs/blob/master/CAIPs/caip-10.md">CAIP-10</a>:
-         <code>did:tz:tz1TzrmTBSuiVHV2VfMnGRMYvTEPCP42oSM8@tezos:carthage</code>.
-         We are sticking with the former for now because <code>@tezos</code>
-         would be redundant.</p>
-      </section>
 
       <section>
       <h4>Note: registry for testnets?</h4>
@@ -205,9 +198,9 @@ digit       = %x30-39  ; 0-9
 
       <section>
       <h4>Note: account character length not documented</h4>
-      <p>We assume the account portion is 36 characters, 3 characters for the
-         prefix and 33 characters for the suffix, but this is not known to be
-         guaranteed at this time within the Tezos documentation.</p>
+      <p>We assume the account portion is 36 bytes, 3 bytes for the prefix and
+          33 bytes for the suffix, but this is not known to be guaranteed at
+          this time within the Tezos documentation.</p>
       </section>
 
       </section>
@@ -271,29 +264,29 @@ digit       = %x30-39  ; 0-9
         </table>
 
         <section>
-        <h4>Note: signature system not standardized</h4>
+        <h4>Note: signature system not documented</h4>
         <p>While <code>Ed25519</code> does specify the use of Curve25519 with
            SHA-512 and EdDSA, it is not currently specified in the Tezos
            documentation that <code>secp256k1</code> or <code>P-256</code> are
            necessarily used with ECDSA. This is just the implied case with
            existing implementations. The latter two are technically curves and
            not public key signature systems, as is the case with
-           <code>Ed25519</code>.  We should move to standardize signature
+           <code>Ed25519</code>. We should move to document signature
            systems for purposes of interoperability and fostering diversity in
            compliant Tezos shell implementations.</p>
         </section>
 
         <section>
-        <h4>Note: account generation algorithm not standardized</h4>
+        <h4>Note: account generation algorithm is undocumented</h4>
         <p>All known major Tezos implementations (e.g., pytez, Tezos shell, and
            TezEdge) use <code>blake2b</code> to hash the public key with a
            <i>digest size</i> of 20 bytes. This hash is then base58 encoded.
            While this methodology is canonical across implementations, it is
-           not specified in the Tezos documentation as required. Therefore,
-           other hashing schemes would be technically allowed. For example, use
-           of the sha512 that is base58 encoded is technically a valid Tezos
-           address.  This is related to the note about variable account
-           character length as a possible direct cause.</p>
+           not specified in the Tezos documentation as required.  For example,
+           use of the sha512 that is base58 encoded is a plausible
+           representation as per the documentation alone.  This is related to
+           the note about variable account character length as a possible
+           direct cause.</p>
         </section>
 
         <section>
@@ -336,7 +329,6 @@ digit       = %x30-39  ; 0-9
         of data sources, known as resolution layers:</p>
     <ol>
       <li>Implied DID Document.</li>
-      <li>Corresponding on-chain protocol-level key rotations.</li>
       <li>Corresponding on-chain smart contract known as a DID Manager.</li>
       <li>Corresponding off-chain DID document signed updates.</li>
     </ol>
@@ -428,15 +420,10 @@ digit       = %x30-39  ; 0-9
     </section> <!-- h4 -->
     </section> <!-- h3 -->
     <section> <!-- h3 -->
-    <h3>On-chain protocol-level key rotations</h3>
-    <p> This functionality is expected to become available with the Sapling
-        protocol upgrade.
-    </p>
-    </section>
-    <section> <!-- h3 -->
     <h3>DID Manager Smart Contract</h3>
     <p> DID Managers are smart contracts on the Tezos blockchain that implement
-        TZIP-19, satisfying the following abstract function interface:
+        TZIP-19, with Michelson annotations satisfying the following abstract
+        function interface:
     </p>
     <code><pre>
 rotateAuthentication :: (VerificationMethod, RotationSignature) => ()
@@ -462,12 +449,12 @@ getService :: () => Service
 
     <p> The <code>RotationSignature</code> input parameter contains the
         signature of the data produced by concatenating the byte
-        representations of the current value, next value, and current rotation
-        count. The current rotation count is defined as the sum total of
-        successfully executed calls to both <code>rotateAuthentication</code>
-        and <code>rotateService</code> to date. For example, if each function
-        were successfully executed exactly once, the current rotation count
-        would be two.
+        representations of the current value's message digest, next value, and
+        current rotation count. The current rotation count is defined as the
+        sum total of successfully executed calls to both
+        <code>rotateAuthentication</code> and <code>rotateService</code> to
+        date. For example, if each function were successfully executed exactly
+        once, the current rotation count would be two.
     </p>
 
     <p> <code>getAuthentication</code> returns the verifiation method for
