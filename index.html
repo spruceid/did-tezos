@@ -550,9 +550,9 @@ getService :: () => Service
 
       <section>
       <h3>Create (Register)</h3>
+      <p>Tiered creation across DID resolution layers:</p>
       <ol>
         <li>DID document is implied</li>
-        <li>Rotate keys on-chain</li>
         <li>Deploy DID manager smart contract</li>
         <li>Create off-chain DID document updates</li>
       </ol>
@@ -560,9 +560,9 @@ getService :: () => Service
 
       <section>
       <h3>Read (Resolve)</h3>
+      <p>Tiered resolution across DID resolution layers:</p>
       <ol>
         <li>Imply DID document from address</li>
-        <li>Lookup and apply on-chain key rotations</li>
         <li>Lookup and apply on-chain DID manager</li>
         <li>Apply any off-chain DID document updates</li>
       </ol>
@@ -570,9 +570,7 @@ getService :: () => Service
 
       <section>
       <h3>Update (Replace)</h3>
-      <section>
-      <h4>On-chain key rotations</h4>
-      </section>
+      <p>Tiered replace across DID resolution layers:</p>
       <section>
       <h4>On-chain DID manager</h4>
       </section>
@@ -583,6 +581,12 @@ getService :: () => Service
 
       <section>
       <h3>Delete (Revoke)</h3>
+      <section>
+      <h4>On-chain DID manager</h4>
+      </section>
+      <section>
+      <h4>Off-chain DID document updates</h4>
+      </section>
       <section>
       <h4>Null rotation</h4>
       </section>
