@@ -1,0 +1,58 @@
+{
+  "name":"DID Manager",
+  "interfaces":[
+    "TZIP-19"
+  ],
+  "views":[
+    {
+      "implementations":[
+        {
+          "michelsonStorageView":{
+            "annotations":[ ],
+            "returnType":{
+              "prim":"pair",
+              "args":[
+                {"prim": "string", "annots": ["%service_endpoint"]},
+                {"prim": "string", "annots": ["%type"]}
+              ]
+            },
+            "code":[
+              {"prim": "CDR"},
+              {"prim": "CAR"},
+              {"prim": "CDR"},
+              {"prim": "CDR"}
+            ],
+            "parameter":{
+              "prim": "unit"
+            }
+          }
+        }
+      ],
+      "name":"GetService",
+      "pure":true
+    },
+    {
+      "implementations":[
+        {
+          "michelsonStorageView":{
+            "annotations":[ ],
+            "returnType":{
+              "prim":"address",
+              "args":[ ],
+              "annots": ["%verification_method"]
+            },
+            "code":[
+              {"prim": "CDR"},
+              {"prim": "CDR"}
+            ],
+            "parameter":{
+              "prim": "unit"
+            }
+          }
+        }
+      ],
+      "name":"GetVerificationMethod",
+      "pure":true
+    }
+  ]
+}
