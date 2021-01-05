@@ -398,8 +398,9 @@ digit       = %x30-39  ; 0-9
   "id": "did:tz:mainnet:tz1TzrmTBSuiVHV2VfMnGRMYvTEPCP42oSM8",
   "authentication": [{
     "id": "did:tz:mainnet:tz1TzrmTBSuiVHV2VfMnGRMYvTEPCP42oSM8#blockchainAccountId",
-    "type": "Ed25519PublicKeyBLAKE2BDigestSize20Base58Encoded2020",
+    "type": "Ed25519PublicKeyBLAKE2BDigestSize20Base58CheckEncoded2020",
     "controller": "did:tz:mainnet:tz1TzrmTBSuiVHV2VfMnGRMYvTEPCP42oSM8",
+    "publicKeyBase58": "H3C2AVvLMv6gmMNam3uVAjZpfkcJCwDwnZn6z3wXmqPV",
     "blockchainAccountId": "tz1TzrmTBSuiVHV2VfMnGRMYvTEPCP42oSM8@tezos:mainnet"
   }]
 }
@@ -452,12 +453,14 @@ getService :: () => Service
 
     <p> The <code>RotationSignature</code> input parameter contains the
         signature of the data produced by concatenating the byte
-        representations of the current value's message digest, next value, and
-        current rotation count. The current rotation count is defined as the
-        sum total of successfully executed calls to both
-        <code>rotateAuthentication</code> and <code>rotateService</code> to
-        date. For example, if each function were successfully executed exactly
-        once, the current rotation count would be two.
+        representations of the current value's message digest, next value,
+        current chain identifier, and current rotation count. Including the
+        chain identifier prevents impersonating the controller on a different
+        chain. The current rotation count is defined as the sum total of
+        successfully executed calls to both <code>rotateAuthentication</code>
+        and <code>rotateService</code> to date. For example, if each function
+        were successfully executed exactly once, the current rotation count
+        would be two.
     </p>
 
     <p> <code>getAuthentication</code> returns the verification method for
@@ -508,8 +511,9 @@ getService :: () => Service
   "id": "did:tz:mainnet:tz1TzrmTBSuiVHV2VfMnGRMYvTEPCP42oSM8",
   "authentication": [{
     "id": "did:tz:mainnet:tz1TzrmTBSuiVHV2VfMnGRMYvTEPCP42oSM8#blockchainAccountId",
-    "type": "Ed25519PublicKeyBLAKE2BDigestSize20Base58Encoded2020",
+    "type": "Ed25519PublicKeyBLAKE2BDigestSize20Base58CheckEncoded2020",
     "controller": "did:tz:mainnet:tz1TzrmTBSuiVHV2VfMnGRMYvTEPCP42oSM8",
+    "publicKeyBase58": "H3C2AVvLMv6gmMNam3uVAjZpfkcJCwDwnZn6z3wXmqPV",
     "blockchainAccountId": "tz1TzrmTBSuiVHV2VfMnGRMYvTEPCP42oSM8@tezos:mainnet"
   }],
   "service": [{
