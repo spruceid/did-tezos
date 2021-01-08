@@ -580,16 +580,28 @@ getService :: () => Service
       <p>Tiered replace across DID resolution layers:</p>
       <section>
       <h4>On-chain DID manager</h4>
+      <ol>
+        <li>Lookup on-chain DID manager</li>
+        <li>Create rotation event</li>
+        <li>Ask for the user's signature</li>
+        <li>Apply the rotation by calling the appropriate entrypoint of the DID Manager</li>
+      </ol>
       </section>
       <section>
       <h4>Off-chain DID document updates</h4>
+      <p>Apply any off-chain DID document updates</p>
       </section>
       </section>
 
       <section>
       <h3>Delete (Revoke)</h3>
+      <P>Tezos does not provide a way to delete accounts or smart contracts. But
+          we can update the DID manager to remove services and verification
+          methods.
+      </P>
       <section>
       <h4>On-chain DID manager</h4>
+      <p>Update the DID manager with empty verification methods and services.</p>
       </section>
       <section>
       <h4>Off-chain DID document updates</h4>
@@ -608,24 +620,44 @@ getService :: () => Service
       <h3>Security Considerations</h3>
       <section>
       <h4>Eavesdropping</h4>
+      <p>All exchanged data is public.</p>
       </section>
       <section>
       <h4>Replay</h4>
+      <p> As the signed rotation events contain the chain ID, it is impossible
+          for an attacker to deploy and replay the DID manager on a different
+          chain.
+      </p>
       </section>
       <section>
       <h4>Message Insertion</h4>
+      <p>Events are signed.</p>
       </section>
       <section>
       <h4>Deletion</h4>
+      <p> With the lack of real deletion, it means that the history of rotations
+          (and thus previous verification methods and services) will stay public
+          on the blockchain.
+      </p>
       </section>
       <section>
       <h4>Modification</h4>
+      <p> Similarly to the deletion, as the DID manager resides on a blockchain,
+          it means that previous rotations will be forever public.
+      </p>
       </section>
       <section>
       <h4>Man-in-the-Middle</h4>
+      <p> When a third-party creates or update the DID manager, the event has to
+          have a valid signature, meaning the user is in control of any change.
+      </p>
       </section>
       <section>
       <h4>Denial of Service</h4>
+      <p> The only remote request happening in the DID resolution is the DID
+          management interactions, and as it is a smart contract it benefits
+          from the Tezos blockchain's guarantees.
+      </p>
       </section>
       <section>
       <h4>Residual Risks</h4>
@@ -645,18 +677,28 @@ getService :: () => Service
       </section>
       <section>
       <h4>Stored data compromise</h4>
+      <p> All stored data in the DID manager is considered public (at the time of
+          rotation).
+      </p>
       </section>
       <section>
       <h4>Unsolicited traffic</h4>
       </section>
       <section>
       <h4>Misattribution</h4>
+      <p> The resolution benefits from the Tezos blockchain (and in this case
+          addresses) to avoid any ambiguity in the resolution.
+      </p>
       </section>
       <section>
       <h4>Correlation</h4>
+      <p>In a way, correlation is the goal of DID resolution.</p>
       </section>
       <section>
       <h4>Identification</h4>
+      <p> The user could add a service that would link to another of their
+          identities.
+      </p>
       </section>
       <section>
       <h4>Secondary use</h4>
@@ -673,6 +715,7 @@ getService :: () => Service
       <h2>Reference Implementations</h2>
       <p> <b>This section is a WIP, please refrain from commenting until this
           message is gone.</b></p>
+      <p>TODO link to Spruce's implementation.</p>
     </section>
 
     <section>
