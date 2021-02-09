@@ -119,8 +119,8 @@
       incentives and therefore stability to ensure properties useful to DID
       management. The cost of a 51 percent attack on Tezos <code>mainnet</code> to
       disrupt these properties was approximately (USD) $1,000,000,000 at the time
-      of writing (October 2020). This economic incentives-based security model has
-      maintained the system's integrity over two years, since its launch on
+      of writing (February 2021). This economic incentives-based security model
+      has maintained the system's integrity over two years, since its launch on
       September 2018.
   </p>
   </section>
@@ -328,6 +328,7 @@ digit       = %x30-39  ; 0-9
 
     <section> <!-- h3 -->
     <h3>Tiered DID Resolution</h3>
+    <img width="100%" src="./res/tiered-resolution.png"/>
     <p> DID resolution occurs sequentially across the following ordered layers
         of data sources, known as resolution layers:</p>
     <ol>
@@ -398,7 +399,7 @@ digit       = %x30-39  ; 0-9
   "id": "did:tz:mainnet:tz1TzrmTBSuiVHV2VfMnGRMYvTEPCP42oSM8",
   "authentication": [{
     "id": "did:tz:mainnet:tz1TzrmTBSuiVHV2VfMnGRMYvTEPCP42oSM8#blockchainAccountId",
-    "type": "Ed25519PublicKeyBLAKE2BDigestSize20Base58CheckEncoded2020",
+    "type": "Ed25519PublicKeyBLAKE2BDigestSize20Base58CheckEncoded2021",
     "controller": "did:tz:mainnet:tz1TzrmTBSuiVHV2VfMnGRMYvTEPCP42oSM8",
     "publicKeyBase58": "H3C2AVvLMv6gmMNam3uVAjZpfkcJCwDwnZn6z3wXmqPV",
     "blockchainAccountId": "tz1TzrmTBSuiVHV2VfMnGRMYvTEPCP42oSM8@tezos:mainnet"
@@ -511,7 +512,7 @@ getService :: () => Service
   "id": "did:tz:mainnet:tz1TzrmTBSuiVHV2VfMnGRMYvTEPCP42oSM8",
   "authentication": [{
     "id": "did:tz:mainnet:tz1TzrmTBSuiVHV2VfMnGRMYvTEPCP42oSM8#blockchainAccountId",
-    "type": "Ed25519PublicKeyBLAKE2BDigestSize20Base58CheckEncoded2020",
+    "type": "Ed25519PublicKeyBLAKE2BDigestSize20Base58CheckEncoded2021",
     "controller": "did:tz:mainnet:tz1TzrmTBSuiVHV2VfMnGRMYvTEPCP42oSM8",
     "publicKeyBase58": "H3C2AVvLMv6gmMNam3uVAjZpfkcJCwDwnZn6z3wXmqPV",
     "blockchainAccountId": "tz1TzrmTBSuiVHV2VfMnGRMYvTEPCP42oSM8@tezos:mainnet"
@@ -584,21 +585,23 @@ getService :: () => Service
         <li>Lookup on-chain DID manager</li>
         <li>Create rotation event</li>
         <li>Ask for the user's signature</li>
-        <li>Apply the rotation by calling the appropriate entrypoint of the DID Manager</li>
+	<li>Apply the rotation by calling the appropriate entrypoint of the DID
+            manager</li>
       </ol>
       </section>
       <section>
       <h4>Off-chain DID document updates</h4>
-      <p>Apply any off-chain DID document updates</p>
+      <p> Apply any off-chain DID document updates.</p>
       </section>
       </section>
 
       <section>
-      <h3>Delete (Revoke)</h3>
-      <P>Tezos does not provide a way to delete accounts or smart contracts. But
-          we can update the DID manager to remove services and verification
-          methods.
-      </P>
+      <h3>Delete (Deactivate)</h3>
+      <p> The Tezos DID manager contract can be updated to remove services and
+	  verification methods. Although inactive in DID resolution, these data
+	  would live on the blockchain indefinitely due to its append-only
+	  nature.
+      </p>
       <section>
       <h4>On-chain DID manager</h4>
       <p>Update the DID manager with empty verification methods and services.</p>
@@ -614,24 +617,31 @@ getService :: () => Service
 
     <section>
       <h2>Security & Privacy</h2>
-      <p> <b>This section is a WIP, please refrain from commenting until this
-          message is gone.</b></p>
       <section>
       <h3>Security Considerations</h3>
       <section>
       <h4>Eavesdropping</h4>
-      <p>All exchanged data is public.</p>
+      <p> All exchanged data is public, except for off-chain rotations, which
+	  will conform to the unspecified underlying architecture and its modes
+	  of communications.
+      </p>
       </section>
       <section>
       <h4>Replay</h4>
-      <p> As the signed rotation events contain the chain ID, it is impossible
-          for an attacker to deploy and replay the DID manager on a different
-          chain.
+      <p> All signed rotation events contain the chain ID, so an attacker is
+	  unable to deploy and replay the DID manager on a different chain.
       </p>
       </section>
       <section>
       <h4>Message Insertion</h4>
-      <p>Events are signed.</p>
+      <p> Rotation events are signed. However, if using the unsigned transaction
+	  option with pre-signed rotation events, anyone may submit the updates
+	  to the Tezos blockchain if they receive access to the rotation
+	  events. This behavior can be eliminated by using signed JSON patches
+	  instead of unsigned transactions, which have use cases such as
+	  desired transaction submission by a third party without key sharing
+	  or multisig.
+      </p>
       </section>
       <section>
       <h4>Deletion</h4>
@@ -648,19 +658,32 @@ getService :: () => Service
       </section>
       <section>
       <h4>Man-in-the-Middle</h4>
-      <p> When a third-party creates or update the DID manager, the event has to
-          have a valid signature, meaning the user is in control of any change.
+      <p> When a third party creates or update the DID manager, the event has to
+	  have a valid signature, meaning the user is in control of any change.
+	  However, if an attacker obtains an uncleared valid transaction with a
+	  signed rotation event, the third party can choose the timing of the
+	  transaction submission.
       </p>
       </section>
       <section>
       <h4>Denial of Service</h4>
-      <p> The only remote request happening in the DID resolution is the DID
-          management interactions, and as it is a smart contract it benefits
-          from the Tezos blockchain's guarantees.
+      <p> The only remote request made during DID resolution is the DID
+	  management interactions, and as it is a smart contract it benefits
+	  from the Tezos blockchain's guarantees of consistency and
+	  availability. If Tezos nodes and indexing services are compromised,
+	  so will be this DID method. Furthermore, if using unsigned
+	  transactions with valid rotation event signatures, it is possible for
+	  an attacker who obtains these transactions to clear them to the Tezos
+	  blockchain even if the original DID controller wished to pursue an
+	  alternate rotation history.
       </p>
       </section>
       <section>
       <h4>Residual Risks</h4>
+      <p> The system's overall security and integrity can only as good as the
+	  DID controller's key management ability, which is known to be a hard
+	  problem for enterprises and especially individuals.
+      </p>
       </section>
       </section>
       <section>
@@ -674,25 +697,48 @@ getService :: () => Service
       </p>
       <section>
       <h4>Surveillance</h4>
+      <p> Surveillance may be possible through a combination of compromised
+	  Tezos full nodes and indexer services supporting TZIP-19 resolution.
+	  This may be mitigated by choosing full nodes and indexer services
+	  that are trusted or self-hosted.
+      </p>
       </section>
       <section>
       <h4>Stored data compromise</h4>
       <p> All stored data in the DID manager is considered public (at the time of
-          rotation).
+	  rotation). Stored data in the off-chain rotation events are subject
+	  to the underlying system architectures and constraints, which are not
+	  specified in this document.
       </p>
       </section>
       <section>
       <h4>Unsolicited traffic</h4>
+      <p> It is possible that DID controllers populate a service endpoint in a
+	  smart contract containing a service not desired to be publicized by
+	  its owner. It is also possible that populating a service endpoint
+	  causes unsolicited traffic from unintended parties due to its public
+	  nature and ability to be indexed and explored on a block explorer.
+      </p>
       </section>
       <section>
       <h4>Misattribution</h4>
-      <p> The resolution benefits from the Tezos blockchain (and in this case
-          addresses) to avoid any ambiguity in the resolution.
+      <p> For the resolution and updates with respect to the DID Document
+	  itself, there is very little risk of attributing activity to the
+	  wrong key pair due to the cryptographic requirements for
+	  authentication and authorization of rotations.
       </p>
       </section>
       <section>
       <h4>Correlation</h4>
-      <p>In a way, correlation is the goal of DID resolution.</p>
+      <p> The DID could be correlated to on-chain Tezos activity and other activity
+	  such as the issuance, presentation, storage, and verification of
+	  Verifiable Credentials if an attacker has access to those data. It is
+	  therefore important for DID users to carefully consider what the use
+	  cases of their DID. It may be beneficial for users to generate new
+	  Tezos DIDs as frequently as per transaction if wallets support this
+	  direction such as by using hierarchical deterministic (HD) wallet
+	  algorithms.
+      </p>
       </section>
       <section>
       <h4>Identification</h4>
@@ -713,15 +759,12 @@ getService :: () => Service
     </section>
     <section>
       <h2>Reference Implementations</h2>
-      <p> <b>This section is a WIP, please refrain from commenting until this
-          message is gone.</b></p>
-      <p>TODO link to Spruce's implementation.</p>
+      <p><a href="https://github.com/spruceid/did-tezos">github.com/spruceid/did-tezos</a></p>
     </section>
 
     <section>
       <h2>Resources</h2>
-      <p> <b>This section is a WIP, please refrain from commenting until this
-          message is gone.</b></p>
+      <p></p>
     </section>
   </body>
 </html>
