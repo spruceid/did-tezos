@@ -1,7 +1,7 @@
 ---
 tzip: 019
 title: A3 - Tezos Decentralized Identifier (DID) Manager
-author: Wayne Chang (@wyc) <wayne@spruceid.com>
+author: Wayne Chang (@wyc) <wayne@spruceid.com>, Simon Bihel <simon.bihel@spruceid.com>, Michael Klein <michael.klein@tqtezos.com>
 status: Work In Progress
 type: Application (A)
 created: 2020-09-16
