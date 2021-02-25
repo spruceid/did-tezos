@@ -1,7 +1,7 @@
 {
   "name":"DID Manager",
   "interfaces":[
-    "TZIP-19"
+    "TZIP-019"
   ],
   "views":[
     {
@@ -12,8 +12,8 @@
             "returnType":{
               "prim":"pair",
               "args":[
-                {"prim": "string", "annots": ["%service_endpoint"]},
-                {"prim": "string", "annots": ["%type"]}
+                {"prim": "string", "annots": ["%endpoint"]},
+                {"prim": "string", "annots": ["%type_"]}
               ]
             },
             "code":[
