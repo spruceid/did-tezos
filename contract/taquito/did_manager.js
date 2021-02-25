@@ -108,7 +108,7 @@ async function originate() {
     const contract = fs.readFileSync('../contract.michelson', 'utf8')
 
     const metadataBigMap = new taquito.MichelsonMap();
-    metadataBigMap.set("", tzip16.char2Bytes("https://gist.githubusercontent.com/sbihel/225e50d6a3befd555b824f4ec374b3b6/raw/2a532032aa48d87e60f8d3155db7312444cd94be/tzip19-metadata.json"));
+    metadataBigMap.set("", tzip16.char2Bytes("https://raw.githubusercontent.com/spruceid/did-tezos/tzip19-offchain/contract/taquito/tzip019-metadata.json"));
 
     let originationOp = await Tezos.contract.originate({
       code: contract,
