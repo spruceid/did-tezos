@@ -6,15 +6,14 @@
                        (nat %rotation_count)))
            signature)
         (pair %rotateService
-           (pair (pair (string %service_endpoint) (string %type_))
+           (pair (pair (string %endpoint) (string %type_))
                  (pair (pair (pair (bytes %current_chain) (bytes %current_value_digest))
                              (pair (bytes %next_value_digest) (key %public_key)))
                        (nat %rotation_count)))
            signature)) ;
   storage
     (pair (pair (pair (key %active_key) (big_map %metadata string bytes))
-                (pair (nat %rotation_count)
-                      (pair %service (string %service_endpoint) (string %type_))))
+                (pair (nat %rotation_count) (pair %service (string %endpoint) (string %type_))))
           (address %verification_method)) ;
   code { UNPAIR ;
          IF_LEFT
@@ -32,27 +31,10 @@
              CAR ;
              DIG 2 ;
              UNPAIR ;
-             SWAP ;
+             DIG 3 ;
              DUP ;
-             DUG 2 ;
-             CAR ;
-             CDR ;
-             CAR ;
+             DUG 4 ;
              PACK ;
-             DIG 4 ;
-             DUP ;
-             DUG 5 ;
-             CAR ;
-             CDR ;
-             CAR ;
-             CONCAT ;
-             DIG 4 ;
-             DUP ;
-             DUG 5 ;
-             CAR ;
-             CAR ;
-             CDR ;
-             CONCAT ;
              SWAP ;
              DIG 2 ;
              DUP ;
@@ -61,7 +43,8 @@
              CAR ;
              CAR ;
              CHECK_SIGNATURE ;
-             IF {} { PUSH string "failed assertion" ; FAILWITH } ;
+             NOT ;
+             IF { PUSH string "Failed signature check." ; FAILWITH } {} ;
              CHAIN_ID ;
              PACK ;
              DIG 3 ;
@@ -71,8 +54,8 @@
              CAR ;
              CAR ;
              COMPARE ;
-             EQ ;
-             IF {} { PUSH string "failed assertion" ; FAILWITH } ;
+             NEQ ;
+             IF { PUSH string "Invalid chain ID." ; FAILWITH } {} ;
              PUSH nat 1 ;
              SWAP ;
              DUP ;
@@ -86,8 +69,8 @@
              DUG 4 ;
              CDR ;
              COMPARE ;
-             EQ ;
-             IF {} { PUSH string "failed assertion" ; FAILWITH } ;
+             NEQ ;
+             IF { PUSH string "Invalid rotation count." ; FAILWITH } {} ;
              DUP ;
              DUG 2 ;
              CAR ;
@@ -125,27 +108,10 @@
              CAR ;
              DIG 2 ;
              UNPAIR ;
-             SWAP ;
+             DIG 3 ;
              DUP ;
-             DUG 2 ;
-             CAR ;
-             CDR ;
-             CAR ;
+             DUG 4 ;
              PACK ;
-             DIG 4 ;
-             DUP ;
-             DUG 5 ;
-             CAR ;
-             CDR ;
-             CAR ;
-             CONCAT ;
-             DIG 4 ;
-             DUP ;
-             DUG 5 ;
-             CAR ;
-             CAR ;
-             CDR ;
-             CONCAT ;
              SWAP ;
              DIG 2 ;
              DUP ;
@@ -154,7 +120,8 @@
              CAR ;
              CAR ;
              CHECK_SIGNATURE ;
-             IF {} { PUSH string "failed assertion" ; FAILWITH } ;
+             NOT ;
+             IF { PUSH string "Failed signature check." ; FAILWITH } {} ;
              CHAIN_ID ;
              PACK ;
              DIG 3 ;
@@ -164,8 +131,8 @@
              CAR ;
              CAR ;
              COMPARE ;
-             EQ ;
-             IF {} { PUSH string "failed assertion" ; FAILWITH } ;
+             NEQ ;
+             IF { PUSH string "Invalid chain ID." ; FAILWITH } {} ;
              PUSH nat 1 ;
              SWAP ;
              DUP ;
@@ -179,32 +146,8 @@
              DUG 4 ;
              CDR ;
              COMPARE ;
-             EQ ;
-             IF {} { PUSH string "failed assertion" ; FAILWITH } ;
-             DUP ;
-             CAR ;
-             CDR ;
-             CDR ;
-             CDR ;
-             DIG 2 ;
-             DUP ;
-             DUG 3 ;
-             CDR ;
-             COMPARE ;
-             EQ ;
-             IF {} { PUSH string "failed assertion" ; FAILWITH } ;
-             DUP ;
-             CAR ;
-             CDR ;
-             CDR ;
-             CAR ;
-             DIG 2 ;
-             DUP ;
-             DUG 3 ;
-             CAR ;
-             COMPARE ;
-             EQ ;
-             IF {} { PUSH string "failed assertion" ; FAILWITH } ;
+             NEQ ;
+             IF { PUSH string "Invalid rotation count." ; FAILWITH } {} ;
              DUP ;
              CDR ;
              DIG 2 ;
