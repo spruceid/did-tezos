@@ -8,8 +8,8 @@ type rotation_event = {
 };
 
 type service = {
-    type_            : string,
-    service_endpoint : string
+    type_    : string,
+    endpoint : string
 };
 
 type storage = {
@@ -21,10 +21,23 @@ type storage = {
 };
 
 let rotate_authentication = ((vm, rot, sgn, strg): (verification_method, rotation_event, signature, storage)): storage => {
-    let sgn_target = Bytes.concat(rot.current_value_digest, Bytes.concat(rot.next_value_digest, Bytes.pack(strg.rotation_count)));
-    assert(Crypto.check(strg.active_key, sgn, sgn_target));
-    assert(rot.current_chain == Bytes.pack(Tezos.chain_id));
-    assert(rot.rotation_count == strg.rotation_count + 1n);
+    let sgn_target = Bytes.pack(rot);
+    if (!Crypto.check(strg.active_key, sgn, sgn_target)) { failwith ("Failed signature check."); };
+    if (rot.current_chain != Bytes.pack(Tezos.chain_id)) { failwith ("Invalid chain ID."); };
+    if (rot.rotation_count != strg.rotation_count + 1n) { failwith ("Invalid rotation count."); };
+
+    // TODO Might no be necessary
+    // let cur_vm = switch ((Bytes.unpack(rot.current_value_digest)): option(verification_method)) {
+    //     | Some v => v
+    //     | None => (failwith ("Invalid current verification method."))
+    // };
+    // if (cur_vm != strg.verification_method) { failwith ("Current vm differs from current vm.") };
+    // let next_vm = switch ((Bytes.unpack(rot.next_value_digest)): option(verification_method)) {
+    //     | Some v => v
+    //     | None => (failwith ("Invalid next verification method."))
+    // };
+    // if (next_vm != vm) { failwith ("Next vm differs from rotation event vm.") };
+
 
     {
         rotation_count      : rot.rotation_count,
@@ -37,12 +50,12 @@ let rotate_authentication = ((vm, rot, sgn, strg): (verification_method, rotatio
 
 // rotation_event and signature are reused from the rotate_authentication section.
 let rotate_service = ((srv, rot, sgn, strg): (service, rotation_event, signature, storage)): storage => {
-    let sgn_target = Bytes.concat(rot.current_value_digest, Bytes.concat(rot.next_value_digest, Bytes.pack(strg.rotation_count)));
-    assert(Crypto.check(strg.active_key, sgn, sgn_target));
-    assert(rot.current_chain == Bytes.pack(Tezos.chain_id));
-    assert(rot.rotation_count == strg.rotation_count + 1n);
-    assert(srv.type_ == strg.service.type_);
-    assert(srv.service_endpoint == strg.service.service_endpoint);
+    let sgn_target = Bytes.pack(rot);
+    if (!Crypto.check(strg.active_key, sgn, sgn_target)) { failwith ("Failed signature check."); };
+    if (rot.current_chain != Bytes.pack(Tezos.chain_id)) { failwith ("Invalid chain ID."); };
+    if (rot.rotation_count != strg.rotation_count + 1n) { failwith ("Invalid rotation count."); };
+
+    // TODO Check the service in the rotation event like for rotate_authentication?
 
     {
         rotation_count      : rot.rotation_count,
