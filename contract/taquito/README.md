@@ -9,6 +9,19 @@ To install dependencies:
 $ npm install
 ```
 
+## Environments
+
+### Test network
+
+You can create an account with https://faucet.tzalpha.net/. Then use nodes like
+https://api.tez.ie/rpc/delphinet.
+
+### Local Flextesa network
+
+You can follow [this guide](https://assets.tqtezos.com/docs/setup/2-sandbox/) to
+set a local sandbox.
+
+
 ## Usage
 
 ```bash
