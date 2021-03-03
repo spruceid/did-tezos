@@ -59,5 +59,5 @@ Operation injected: https://delphi.tzstats.com/opUGGvHSzbnh3gyQMNssCFqjFNQRxVGKM
 
 ### Rotate Authentication
 ```bash
-$ node did_manager.js rotate-auth -u https://api.tez.ie/rpc/delphinet -f faucet.json -s <secret_key> -a <other_address>
+$ node did_manager.js rotate-auth -u https://api.tez.ie/rpc/delphinet -s <secret_key> -a <other_address>
 ```
