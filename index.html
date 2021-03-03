@@ -9,13 +9,20 @@
   <script class='remove'>
     const respecConfig = {
       specStatus: "unofficial",
-      editors: [{
+      editors: [
+      	{
           name: "Wayne Chang",
           url: "https://spruceid.com",
         }, {
           name: "Michael Klein",
           url: "https://tqtezos.com",
-        },
+        }
+      ],
+      authors: [
+      	{
+          name: "Simon Bihel",
+          url: "https://spruceid.com",
+        }
       ],
       processVersion: 2017,
       edDraftURI: "https://github.com/spruceid/did-tezos",
@@ -25,145 +32,154 @@
   <script src="https://hypothes.is/embed.js" async></script>
 </head>
 <body>
-  <section id='abstract'>
-    <p> <a href="https://gitlab.com/tezos/tezos">Tezos</a> is an open-source
-        blockchain protocol that has a formalized process for upgrades and uses
-        a virtual machine language called Michelson, which is designed to
-        support formal verification using proof assistants. It can be used for
-        DID creation and management compatible with the issuance, storage, and
-        verification of Verifiable Credentials, achieving a pragmatic balance
-        across privacy, decentralization, and accessibility for general purpose
-        use in Internet scale consumer and B2B applications.
-  </p>
-  </section>
+	<section id='abstract'> <!-- BEGIN abstract -->
+    <p>
+			<a href="https://gitlab.com/tezos/tezos">Tezos</a> is an open-source
+			blockchain protocol that has a formalized process for upgrades and uses
+			a virtual machine language called Michelson, which is designed to
+			support formal verification using proof assistants. It can be used for
+			DID creation and management compatible with the issuance, storage, and
+			verification of Verifiable Credentials, achieving a pragmatic balance
+			across privacy, decentralization, and accessibility for general purpose
+			use in Internet scale consumer and B2B applications.
+		</p>
+	</section> <!-- END abstract -->
   <section id='sotd'></section>
   <!-- introduction -->
-  <section class='informative'> <!-- h2 -->
-  <h2>Introduction</h2>
-  <section>
-  <h3>Problem statement</h3>
-  <p> did-core specifies that DIDs are required to implement
-      <a href="https://www.w3.org/TR/did-core/#resolution">DID Resolution</a>.
-      As per the DID Decentralized Rubric, properties of a DID method may range
-      from:
-  </p>
-  <ul>
-    <li>Self-managed to controlled by a single platform.</li>
-    <li>Spread across thousands of independent servers to hosted on a single
-        mainframe.</li>
-    <li>Private to select parties to visible across the entire Internet.</li>
-    <li>Open for use by anyone to gatekeeped by signed legal documents.</li>
-  </ul>
-  <p> We seek to specify a DID method with pragmatic trade-offs across privacy,
-      decentralization, and accessibility, suitable for use in Internet scale
-      consumer and B2B applications. To accomplish this, the DID method
-      resolves across tiered layers of data storage, each with different
-      characteristics, but all at the ultimate control of the user.
-  </p>
-  <p> In this document, we specify the syntax for Tezos DIDs, architecture of
-      tiered resolution, and the four basic CRUD operations (create, read,
-      update, deactivate) required by did-core. We also provide discussion on
-      privacy implications, code snippets, and guidelines for implementers.
-  </p>
-  </section>
+  <section class='informative'> <!-- BEGIN introduction -->
+		<h2>Introduction</h2>
+		<section>
+		<h3>Problem statement</h3>
+		<p>
+			did-core specifies that DIDs are required to implement
+			<a href="https://www.w3.org/TR/did-core/#resolution">DID Resolution</a>.
+			As per the DID Decentralized Rubric, properties of a DID method may range
+			from:
+		</p>
+		<ul>
+			<li>Self-managed to controlled by a single platform.</li>
+			<li>Spread across thousands of independent servers to hosted on a single
+					mainframe.</li>
+			<li>Private to select parties to visible across the entire Internet.</li>
+			<li>Open for use by anyone to gatekeeped by signed legal documents.</li>
+		</ul>
+		<p>
+			We seek to specify a DID method with pragmatic trade-offs across privacy,
+			decentralization, and accessibility, suitable for use in Internet scale
+			consumer and B2B applications. To accomplish this, the DID method resolves
+			across tiered layers of data storage, each with different characteristics,
+			but all at the ultimate control of the user.
+		</p>
+		<p>
+			In this document, we specify the syntax for Tezos DIDs, architecture of
+			tiered resolution, and the four basic CRUD operations (create, read,
+			update, deactivate) required by did-core. We also provide discussion on
+			privacy implications, code snippets, and guidelines for implementers.
+		</p>
+		</section>
 
-  <section>
-  <h3>Why a Tezos DID Method?</h3>
-  <p> For purposes of DID management, the relevant properties provided by the
-      Tezos blockchain are: </p>
-  <ul>
-    <li><b>Public and highly available</b>: The Tezos <code>mainnet</code>
-        instance has thousands of independently controlled active nodes
-        and validators able to share full transaction histories with any
-        requesting peer, requiring only an Internet connection. This allows
-        DIDs based on Tezos transactions, such as those created by the method
-        described in this document, to achieve high accessibility and
-        availability.</li>
-    <li><b>Permissionless</b>: Anyone is able to also write to the Tezos
-        blockchain instances using the <code>XTZ</code> cryptocurrency to
-        pay transaction fees. This cryptocurrency can be received by anyone
-        directly from any peer possessing it, and it is also widely
-        available for purchase on major cryptocurrency exchanges. In an
-        upcoming protocol upgrade, <a>permits</a> will allow for third
-        parties to pay transaction fees on behalf of others.</li>
-    <li><b>Censorship resistant</b>: The protocol uses cryptography to
-        maintain integrity across all transactions, and the transaction history
-        may be fully replicated from any single node out of thousands, using
-        commodity hardware. The integrity of the network is maintained using a
-        proof of stake consensus algorithm, and the cost to attack the network
-        is prohibitively expensive for many attack vectors, as described in the
-        following section.</li>
-    <li><b>Upgradable</b>: The Tezos protocol and virtual machine language
-        Michelson can be upgraded without disruption to the network, and this
-        has been completed successfully eight times since its launch, with
-        mechanisms to correct for human errors. To illustrate new features
-        available via protocol upgrades, an upcoming protocol upgrade is adding
-        shielded transactions to the base protocol to enable privacy-enhanced
-        operations and scalability. These improvements can enhance DID and
-        Verifiable Credential functionality and performance.</li>
-    <li><b>Up to date</b>: Tezos has a 60-second block time, which is able to
-        ensure that resolved Tezos-based DID documents are up to date within
-        reasonable time bounds for many use cases.</li>
-    <li><b>Formally verifiable</b>: Michelson, the virtual machine language
-        used by Tezos, is designed to facilitate formal verification using
-        proof assistant frameworks, such as Mi-Cho-Coq. It is possible to
-        formally verify some properties of software used for DID management, or
-        even to create a full specification.</li>
-  </ul>
-  </section>
+		<section>
+		<h3>Why a Tezos DID Method?</h3>
+		<p>
+			For purposes of DID management, the relevant properties provided by the
+			Tezos blockchain are:
+		</p>
+		<ul>
+			<li><b>Public and highly available</b>: The Tezos <code>mainnet</code>
+					instance has thousands of independently controlled active nodes
+					and validators able to share full transaction histories with any
+					requesting peer, requiring only an Internet connection. This allows
+					DIDs based on Tezos transactions, such as those created by the method
+					described in this document, to achieve high accessibility and
+					availability.</li>
+			<li><b>Permissionless</b>: Anyone is able to also write to the Tezos
+					blockchain instances using the <code>XTZ</code> cryptocurrency to
+					pay transaction fees. This cryptocurrency can be received by anyone
+					directly from any peer possessing it, and it is also widely
+					available for purchase on major cryptocurrency exchanges. In an
+					upcoming protocol upgrade, <a>permits</a> will allow for third
+					parties to pay transaction fees on behalf of others.</li>
+			<li><b>Censorship resistant</b>: The protocol uses cryptography to
+					maintain integrity across all transactions, and the transaction history
+					may be fully replicated from any single node out of thousands, using
+					commodity hardware. The integrity of the network is maintained using a
+					proof of stake consensus algorithm, and the cost to attack the network
+					is prohibitively expensive for many attack vectors, as described in the
+					following section.</li>
+			<li><b>Upgradable</b>: The Tezos protocol and virtual machine language
+					Michelson can be upgraded without disruption to the network, and this
+					has been completed successfully eight times since its launch, with
+					mechanisms to correct for human errors. To illustrate new features
+					available via protocol upgrades, an upcoming protocol upgrade is adding
+					shielded transactions to the base protocol to enable privacy-enhanced
+					operations and scalability. These improvements can enhance DID and
+					Verifiable Credential functionality and performance.</li>
+			<li><b>Up to date</b>: Tezos has a 60-second block time, which is able to
+					ensure that resolved Tezos-based DID documents are up to date within
+					reasonable time bounds for many use cases.</li>
+			<li><b>Formally verifiable</b>: Michelson, the virtual machine language
+					used by Tezos, is designed to facilitate formal verification using
+					proof assistant frameworks, such as Mi-Cho-Coq. It is possible to
+					formally verify some properties of software used for DID management, or
+					even to create a full specification.</li>
+		</ul>
+		</section>
 
-  <section>
-  <h3>Tezos Settlement Finality</h3>
-  <p> Implementations of the Tezos blockchain exist across several instances,
-      with the instance called <code>mainnet</code> concentrating economic
-      incentives and therefore stability to ensure properties useful to DID
-      management. The cost of a 51 percent attack on Tezos <code>mainnet</code> to
-      disrupt these properties was approximately (USD) $1,000,000,000 at the time
-      of writing (February 2021). This economic incentives-based security model
-      has maintained the system's integrity over two years, since its launch on
-      September 2018.
-  </p>
-  </section>
-
-  </section> <!-- h2 -->
-    <section>
-      <h2>Design Criteria</h2>
-      <p>Design criteria are the explicit goals that a project must achieve in
-      order to be successful. The Design Criteria of the Tezos DID Method are
-      the following:</p>
-      <ul>
-        <li><b>Secure</b>. It will pursue the correct use of cryptography, proper
-            authentication and authorizations for protected actions such as key
-            rotations, and creation of guidelines for safe use.</li>
-        <li><b>Simple</b>. It will be straightforward for implementers to interpret
-            and build. End users will be able to quickly understand its utility
-            upon glance and without reading the full specification.</li>
-        <li><b>Inclusive</b>. It will allow every account on Tezos, whether it
-            has an on-chain transaction history or not, to use DIDs such as
-            in the issuance, storage, and presentation of Verifiable
-            Credentials or use of DIDComm for secure and private DID-to-DID
-            communications.</li>
-        <li><b>Privacy preserving</b>. It will follow principles of information
-            minimization and create as few public uncensorable on-chain
-            artifacts as possible, providing off-chain alternatives that are
-            more peer-to-peer when possible.</li>
-        <li><b>Usable and compatible</b>. It will be interoperable with
-            existing DID methods and adjacent standards. DIDs using this method
-            will be widely resolvable.</li>
-      </ul>
-    </section>
-    <section>
-      <h2>Tezos DID Scheme</h2>
-      <p>The namestring that shall identify this DID method is: <code>tz</code>.
-         A DID that uses this method MUST begin with the prefix
-         <code>did:tz</code>. As per the DID specification, this string MUST be
-         in lowercase.</p>
-      <section>
-      <h3>Syntax and Interpretation</h3>
-      <p>The full Tezos DID scheme is defined by the following
-         <a href="https://tools.ietf.org/html/std68">ABNF</a>:
-      </p>
-      <pre><code>
+		<section>
+		<h3>Tezos Settlement Finality</h3>
+		<p>
+			Implementations of the Tezos blockchain exist across several instances,
+			with the instance called <code>mainnet</code> concentrating economic
+			incentives and therefore stability to ensure properties useful to DID
+			management. The cost of a 51 percent attack on Tezos <code>mainnet</code>
+			to disrupt these properties was approximately (USD) $1,000,000,000 at the
+			time of writing (February 2021). This economic incentives-based security
+			model has maintained the system's integrity over two years, since its
+			launch on September 2018.
+		</p>
+		</section>
+  </section> <!-- END introduction -->
+	<section> <!-- BEGIN design-criteria -->
+		<h2>Design Criteria</h2>
+		<p>Design criteria are the explicit goals that a project must achieve in
+		order to be successful. The Design Criteria of the Tezos DID Method are
+		the following:</p>
+		<ul>
+			<li><b>Secure</b>. It will pursue the correct use of cryptography, proper
+					authentication and authorizations for protected actions such as key
+					rotations, and creation of guidelines for safe use.</li>
+			<li><b>Simple</b>. It will be straightforward for implementers to interpret
+					and build. End users will be able to quickly understand its utility
+					upon glance and without reading the full specification.</li>
+			<li><b>Inclusive</b>. It will allow every account on Tezos, whether it
+					has an on-chain transaction history or not, to use DIDs such as
+					in the issuance, storage, and presentation of Verifiable
+					Credentials or use of DIDComm for secure and private DID-to-DID
+					communications.</li>
+			<li><b>Privacy preserving</b>. It will follow principles of information
+					minimization and create as few public uncensorable on-chain
+					artifacts as possible, providing off-chain alternatives that are
+					more peer-to-peer when possible.</li>
+			<li><b>Usable and compatible</b>. It will be interoperable with
+					existing DID methods and adjacent standards. DIDs using this method
+					will be widely resolvable.</li>
+		</ul>
+	</section> <!-- END design-criteria -->
+	<section> <!-- BEGIN tezos-did-scheme -->
+		<h2>Tezos DID Scheme</h2>
+		<p>
+			The namestring that shall identify this DID method is: <code>tz</code>.
+			A DID that uses this method MUST begin with the prefix
+			<code>did:tz</code>. As per the DID specification, this string MUST be
+			in lowercase.
+		</p>
+		<section>
+			<h3>Syntax and Interpretation</h3>
+			<p>
+				The full Tezos DID scheme is defined by the following
+				 <a href="https://tools.ietf.org/html/std68">ABNF</a>:
+			</p>
+			<pre><code>
 tezos-did   = "did:tz:" [ network ":" ] address
 network     = 1*(lower-char / digit)
 address     = prefix 33*33base58-char
@@ -177,137 +193,147 @@ base58-char = "1" / "2" / "3" / "4" / "5" / "6" / "7" / "8" / "9" /
               "v" / "w" / "x" / "y" / "z"
 lower-char  = %x61-7A  ; a-z
 digit       = %x30-39  ; 0-9
-      </code></pre>
-      <p>All Tezos DIDs use base58 encoding for the <code>address</code> rule.
-         base58 is an encoding scheme similar to base64, first used by Bitcoin,
-         disallowing characters that may be misinterpreted by the human eye,
-         specifically <code>O</code>&nbsp;(uppercase&nbsp;'<code>o</code>'),
-         <code>0</code>&nbsp;(the&nbsp;digit&nbsp;zero),
-         <code>I</code>&nbsp;(uppercase&nbsp;'<code>i</code>'), and
-         <code>l</code>&nbsp;(lowercase&nbsp;'<code>L</code>').
-         <br/> <br/> The <code>network</code> rule MAY be used to indicate
-         which Tezos instance the DID references. If it is not present, then
-         the instance is assumed to be <code>mainnet</code>. Other known test
-         networks include <code>dalphanet</code>, <code>carthage</code>,
-         and <code>labnet</code>. The number of test networks is expected to
-         grow.</p>
+			</code></pre>
+			<p>
+				All Tezos DIDs use base58 encoding for the <code>address</code> rule.
+				base58 is an encoding scheme similar to base64, first used by Bitcoin,
+				disallowing characters that may be misinterpreted by the human eye,
+				specifically <code>O</code>&nbsp;(uppercase&nbsp;'<code>o</code>'),
+				<code>0</code>&nbsp;(the&nbsp;digit&nbsp;zero),
+				<code>I</code>&nbsp;(uppercase&nbsp;'<code>i</code>'), and
+				<code>l</code>&nbsp;(lowercase&nbsp;'<code>L</code>').  <br/> <br/> The
+				<code>network</code> rule MAY be used to indicate which Tezos instance
+				the DID references. If it is not present, then the instance is assumed
+				to be <code>mainnet</code>. Other known test networks include
+				<code>dalphanet</code>, <code>carthage</code>, and <code>labnet</code>.
+				The number of test networks is expected to grow.
+			</p>
+			<section>
+				<h4>Note: registry for testnets?</h4>
+				<p>
+					What is the process for registering a new test network? Is there any
+					existing registry of testnets, and how to access them? How can this be
+					official and community-managed? Tezos User Group?
+				</p>
+			</section>
 
-      <section>
-      <h4>Note: registry for testnets?</h4>
-      <p>What is the process for registering a new test network? Is there any
-         existing registry of testnets, and how to access them? How can this be
-         official and community-managed? Tezos User Group?</p>
-      </section>
+			<section>
+				<h4>Note: account character length not documented</h4>
+				<p>
+					We assume the account portion is 36 bytes, 3 bytes for the prefix and
+					33 bytes for the suffix, but this is not known to be guaranteed at this
+					time within the Tezos documentation.
+				</p>
+			</section>
 
-      <section>
-      <h4>Note: account character length not documented</h4>
-      <p>We assume the account portion is 36 bytes, 3 bytes for the prefix and
-          33 bytes for the suffix, but this is not known to be guaranteed at
-          this time within the Tezos documentation.</p>
-      </section>
-
-      </section>
-      <section>
+		</section>
+		<section>
       <h3>Background on Tezos Addresses</h3>
-        <p> Tezos addresses can exist as either accounts or smart contracts.
-            Tezos accounts are generated from public keys. The three character
-            prefix, <code>tz1</code>, <code>tz2</code>, or <code>tz3</code>,
-            indicate which signature system and elliptic curve are used. The
-            prefix of <code>KT1</code> denotes a Tezos smart contract, which do
-            not have an implied public-private key pair. (Note that this
-            specification does not support the prefix <code>btz1</code> used
-            for blinded accounts.) Tezos supports three public key signature
-            systems for its accounts, each with a different elliptic curve:
-        </p>
-        <table border="1px" cellspacing="0" cellpadding="5">
-          <tr>
-            <th>Prefix</th>
-            <th>Curve</th>
-            <th>Description</th>
-          </tr>
-          <tr>
-            <td><code>tz1</code></td>
-            <td><code><a href="https://ed25519.cr.yp.to/">Ed25519</a></code></td>
-            <td>This is a public key signature system that uses
-                <a href="https://cr.yp.to/ecdh.html">Curve25519</a> with the <a href="https://tools.ietf.org/html/rfc8032">EdDSA signature scheme</a>
-                and SHA-512. It is
-                <a href="https://www.nist.gov/news-events/news/2019/10/digital-signatures-and-elliptic-curve-cryptography-request-comments-draft">under consideration</a>
-                for inclusion in official NIST recommendations. Note that with
-                EdDSA, it is not possible to recover the public key from a
-                signature as is the case with ECDSA.</td>
-          </tr>
-          <tr>
-            <td><code>tz2</code></td>
-            <td><code>secp256k1</code></td>
-            <td>This curve is used in Bitcoin's public-key cryptography, and is
-                defined in
-                <a href="http://www.secg.org/sec2-v2.pdf">Standards
-                    for Efficient Cryptography (SEC)</a>. It is also used by
-                Ethereum. In Tezos, this curve is used with ECDSA.</td>
-          </tr>
-          <tr>
-            <td><code>tz3</code></td>
-            <td><code>P-256</code></td>
-            <td>This is a NIST standard curve and one of the most widely used,
-                also referred to as <code>secp256r1</code> in
-                <a href="https://www.ietf.org/rfc/rfc5480.txt">IETF literature</a>.
-                It is currently supported in the Apple CryptoKit, Android
-                KeyStore, and is widely used in TLS. In Tezos, this curve is used
-                with ECDSA. The cryptography community has
-                <a href="https://safecurves.cr.yp.to/index.html">raised concerns</a>
-                around its use.</td>
-          </tr>
-          <tr>
-            <td><code>KT1</code></td>
-            <td><i>N/A</i></td>
-            <td>Tezos smart contracts differ from Tezos accounts in that they
-                are not directly associated with a public/private key pair at
-                the protocol level.</td>
-          </tr>
-        </table>
+			<p>
+				Tezos addresses can exist as either accounts or smart contracts.  Tezos
+				accounts are generated from public keys. The three character prefix,
+				<code>tz1</code>, <code>tz2</code>, or <code>tz3</code>, indicate which
+				signature system and elliptic curve are used. The prefix of
+				<code>KT1</code> denotes a Tezos smart contract, which do not have an
+				implied public-private key pair. (Note that this specification does not
+				support the prefix <code>btz1</code> used for blinded accounts.) Tezos
+				supports three public key signature systems for its accounts, each with
+				a different elliptic curve:
+			</p>
+			<table border="1px" cellspacing="0" cellpadding="5">
+				<tr>
+					<th>Prefix</th>
+					<th>Curve</th>
+					<th>Description</th>
+				</tr>
+				<tr>
+					<td><code>tz1</code></td>
+					<td><code><a href="https://ed25519.cr.yp.to/">Ed25519</a></code></td>
+					<td>This is a public key signature system that uses
+							<a href="https://cr.yp.to/ecdh.html">Curve25519</a> with the <a href="https://tools.ietf.org/html/rfc8032">EdDSA signature scheme</a>
+							and SHA-512. It is
+							<a href="https://www.nist.gov/news-events/news/2019/10/digital-signatures-and-elliptic-curve-cryptography-request-comments-draft">under consideration</a>
+							for inclusion in official NIST recommendations. Note that with
+							EdDSA, it is not possible to recover the public key from a
+							signature as is the case with ECDSA.</td>
+				</tr>
+				<tr>
+					<td><code>tz2</code></td>
+					<td><code>secp256k1</code></td>
+					<td>This curve is used in Bitcoin's public-key cryptography, and is
+							defined in
+							<a href="http://www.secg.org/sec2-v2.pdf">Standards
+									for Efficient Cryptography (SEC)</a>. It is also used by
+							Ethereum. In Tezos, this curve is used with ECDSA.</td>
+				</tr>
+				<tr>
+					<td><code>tz3</code></td>
+					<td><code>P-256</code></td>
+					<td>This is a NIST standard curve and one of the most widely used,
+							also referred to as <code>secp256r1</code> in
+							<a href="https://www.ietf.org/rfc/rfc5480.txt">IETF literature</a>.
+							It is currently supported in the Apple CryptoKit, Android
+							KeyStore, and is widely used in TLS. In Tezos, this curve is used
+							with ECDSA. The cryptography community has
+							<a href="https://safecurves.cr.yp.to/index.html">raised concerns</a>
+							around its use.</td>
+				</tr>
+				<tr>
+					<td><code>KT1</code></td>
+					<td><i>N/A</i></td>
+					<td>Tezos smart contracts differ from Tezos accounts in that they
+							are not directly associated with a public/private key pair at
+							the protocol level.</td>
+				</tr>
+			</table>
 
-        <section>
+			<section>
         <h4>Note: signature system not documented</h4>
-        <p>While <code>Ed25519</code> does specify the use of Curve25519 with
-           SHA-512 and EdDSA, it is not currently specified in the Tezos
-           documentation that <code>secp256k1</code> or <code>P-256</code> are
-           necessarily used with ECDSA. This is just the implied case with
-           existing implementations. The latter two are technically curves and
-           not public key signature systems, as is the case with
-           <code>Ed25519</code>. We should move to document signature
-           systems for purposes of interoperability and fostering diversity in
-           compliant Tezos shell implementations.</p>
-        </section>
+        <p>
+					While <code>Ed25519</code> does specify the use of Curve25519 with
+					SHA-512 and EdDSA, it is not currently specified in the Tezos
+					documentation that <code>secp256k1</code> or <code>P-256</code> are
+					necessarily used with ECDSA. This is just the implied case with
+					existing implementations. The latter two are technically curves and
+					not public key signature systems, as is the case with
+					<code>Ed25519</code>. We should move to document signature systems
+					for purposes of interoperability and fostering diversity in compliant
+					Tezos shell implementations.
+				</p>
+			</section>
 
-        <section>
+			<section>
         <h4>Note: account generation algorithm is undocumented</h4>
-        <p>All known major Tezos implementations (e.g., pytez, Tezos shell, and
-           TezEdge) use <code>blake2b</code> to hash the public key with a
-           <i>digest size</i> of 20 bytes. This hash is then base58 encoded.
-           While this methodology is canonical across implementations, it is
-           not specified in the Tezos documentation as required.  For example,
-           use of the sha512 that is base58 encoded is a plausible
-           representation as per the documentation alone.  This is related to
-           the note about variable account character length as a possible
-           direct cause.</p>
-        </section>
+        <p>
+					All known major Tezos implementations (e.g., pytez, Tezos shell, and
+					TezEdge) use <code>blake2b</code> to hash the public key with a
+					<i>digest size</i> of 20 bytes. This hash is then base58 encoded.
+					While this methodology is canonical across implementations, it is not
+					specified in the Tezos documentation as required.  For example, use
+					of the sha512 that is base58 encoded is a plausible representation as
+					per the documentation alone.  This is related to the note about
+					variable account character length as a possible direct cause.
+				</p>
+			</section>
 
-        <section>
+			<section>
         <h4>Note: btz1 "blinded" signatures are undocumented</h4>
-        <p>There is scarce mention of <code>btz1</code> "blinded" account
-           prefixes other than a few loose strands of documentation and
-           historical mentions from around 2018. It is assumed that they are
-           not in active use today and therefore not relevant to this
-           specification. We have an opportunity to document this and its
-           historical significance to reduce future confusion.</p>
-        </section>
+        <p>
+					There is scarce mention of <code>btz1</code> "blinded" account
+					prefixes other than a few loose strands of documentation and
+					historical mentions from around 2018. It is assumed that they are not
+					in active use today and therefore not relevant to this specification.
+					We have an opportunity to document this and its historical
+					significance to reduce future confusion.
+				</p>
+			</section>
 
-        </section>
-        <section>
+			</section>
+			<section>
         <h3>Examples</h3>
         <code>did:tz:tz1TzrmTBSuiVHV2VfMnGRMYvTEPCP42oSM8</code>.
-        </section>
-    </section>
+			</section>
+		</section> <!-- END tezos-did-scheme  -->
     <!--
     <section>
       <h2>JSON-LD Context Definition</h2>
@@ -315,85 +341,86 @@ digit       = %x30-39  ; 0-9
        <p class="replace-me">TODO</p>
     </section>
     -->
-    <section>
-    <h2>Architecture</h2>
-    <p> The objective for the Tezos DID Method is to utilize Tezos accounts and
-        smart contract addresses in a coherent manner to manage DID documents
-        while adhering to this document's Design Criteria, including security,
-        privacy, and simplicity. For simplicity, Tezos DIDs only support a
-        single active public key and service endpoint at a time. In this
-        section, we describe major architectural patterns utilized in its DID
-        operations.
+    <section> <!-- BEGIN architecture -->
+		<h2>Architecture</h2>
+    <p>
+			The objective for the Tezos DID Method is to utilize Tezos accounts and
+			smart contract addresses in a coherent manner to manage DID documents
+			while adhering to this document's Design Criteria, including security,
+			privacy, and simplicity. For simplicity, Tezos DIDs only support a single
+			active public key and service endpoint at a time. In this section, we
+			describe major architectural patterns utilized in its DID operations.
     </p>
 
     <section> <!-- h3 -->
-    <h3>Tiered DID Resolution</h3>
-    <img width="100%" src="./res/tiered-resolution.png"/>
-    <p> DID resolution occurs sequentially across the following ordered layers
-        of data sources, known as resolution layers:</p>
-    <ol>
-      <li>Implied DID Document.</li>
-      <li>Corresponding on-chain smart contract known as a DID Manager.</li>
-      <li>Corresponding off-chain DID document signed updates.</li>
-    </ol>
-    <p> DID resolvers must move sequentially through all resolution layers to
-        incrementally build a DID document, and they fail upon the first
-        encountered inconsistency, producing an error result and no DID
-        document. Success can only be achieved after processing all resolution
-        layers.
+			<h3>Tiered DID Resolution</h3>
+			<img width="100%" src="./res/tiered-resolution.png"/>
+			<p> DID resolution occurs sequentially across the following ordered layers
+					of data sources, known as resolution layers:</p>
+			<ol>
+				<li>Implied DID Document.</li>
+				<li>Corresponding on-chain smart contract known as a DID Manager.</li>
+				<li>Corresponding off-chain DID document signed updates.</li>
+			</ol>
+			<p> DID resolvers must move sequentially through all resolution layers to
+					incrementally build a DID document, and they fail upon the first
+					encountered inconsistency, producing an error result and no DID
+					document. Success can only be achieved after processing all resolution
+					layers.
 
-    <section> <!-- h4 -->
-    <h4>Absence of data sources</h4>
-    <p> The absence of a data source is <b>not</b> considered an inconsistency,
-        and the resolver simply disregards the absent data source, moving on to
-        the next data source in the sequence. An example of an inconsistency is
-        a signed JSON patch that fails an integrity check or uses an unexpected
-        key.
-    </p>
-    </section> <!-- h4 -->
-    <section> <!-- h4 -->
-    <h4>Tezos addresses: accounts vs. smart contracts</h4>
-    <p> A Tezos address may represent either an account, beginning with
-        <code>tz1</code>, <code>tz2</code>, or <code>tz3</code>, or a smart
-        contract, beginning with <code>KT1</code>. When they populate the
-        <code>address</code> ABNF rule in DIDs, they are known as account
-        address-based DIDs and smart contract address-based DIDs, respectively.
-    </p>
-    <p> Smart contracts do not come with implied key pairs, so their implied
-        DID document is absent. Furthermore, they cannot have off-chain signed
-        updates without deployment, as currently, smart contract addresses
-        cannot be known prior to deployment. Therefore, smart contract
-        address-based DIDs must always be deployed prior to use.
-    </p>
-    </section> <!-- h4 -->
+			<section> <!-- h4 -->
+				<h4>Absence of data sources</h4>
+				<p> The absence of a data source is <b>not</b> considered an inconsistency,
+						and the resolver simply disregards the absent data source, moving on to
+						the next data source in the sequence. An example of an inconsistency is
+						a signed JSON patch that fails an integrity check or uses an unexpected
+						key.
+				</p>
+			</section> <!-- h4 -->
+			<section> <!-- h4 -->
+				<h4>Tezos addresses: accounts vs. smart contracts</h4>
+				<p> A Tezos address may represent either an account, beginning with
+						<code>tz1</code>, <code>tz2</code>, or <code>tz3</code>, or a smart
+						contract, beginning with <code>KT1</code>. When they populate the
+						<code>address</code> ABNF rule in DIDs, they are known as account
+						address-based DIDs and smart contract address-based DIDs, respectively.
+				</p>
+				<p> Smart contracts do not come with implied key pairs, so their implied
+						DID document is absent. Furthermore, they cannot have off-chain signed
+						updates without deployment, as currently, smart contract addresses
+						cannot be known prior to deployment. Therefore, smart contract
+						address-based DIDs must always be deployed prior to use.
+				</p>
+			</section> <!-- h4 -->
     </section> <!-- h3 -->
     <section> <!-- h3 -->
-    <h3>Implied DID Document</h3>
-    <p> For Tezos account address-based DIDs with addresses starting with
-        <code>tz1</code>, <code>tz2</code>, or <code>tz3</code>, DID document
-        resolution is possible without committing any Tezos blockchain
-        transactions to preserve privacy and save costs. Because all
-        <code>mainnet</code> blockchain transactions are public, immutable, and
-        fee-based, it is recommended to exercise extreme caution and store the
-        absolute minimum amount of information on-chain.
-    </p>
+			<h3>Implied DID Document</h3>
+			<p>
+				For Tezos account address-based DIDs with addresses starting with
+				<code>tz1</code>, <code>tz2</code>, or <code>tz3</code>, DID document
+				resolution is possible without committing any Tezos blockchain
+				transactions to preserve privacy and save costs. Because all
+				<code>mainnet</code> blockchain transactions are public, immutable, and
+				fee-based, it is recommended to exercise extreme caution and store the
+				absolute minimum amount of information on-chain.
+			</p>
 
-    <section>
-    <h4>Deriving DID Documents</h4>
-    <p> At this resolution layer, DID document is derived by <i>implying</i>
-        values from a Tezos account address-based DID, such as
-        <code>did:tz:mainnet:tz1TzrmTBSuiVHV2VfMnGRMYvTEPCP42oSM8</code>, which
-        matches the <code>account</code> and optional <code>network</code>
-        rules in the DID Scheme ABNF. This value is then used within the DID
-        document <code>authentication</code> section as the
-        <a href="https://w3c-ccg.github.io/security-vocab/#blockchainAccountId"><code>blockchainAccountId</code></a>
-        as specified in the
-        <a href="https://w3c-ccg.github.io/security-vocab/">Security Vocab</a>.
-        A DID resolver could take the example DID and generate the following
-        DID document without incorporating any data from blockchain
-        transactions:
-    </p>
-    <code><pre>
+			<section>
+				<h4>Deriving DID Documents</h4>
+				<p>
+					At this resolution layer, DID document is derived by <i>implying</i>
+					values from a Tezos account address-based DID, such as
+					<code>did:tz:mainnet:tz1TzrmTBSuiVHV2VfMnGRMYvTEPCP42oSM8</code>,
+					which matches the <code>account</code> and optional
+					<code>network</code> rules in the DID Scheme ABNF. This value is then
+					used within the DID document <code>authentication</code> section as
+					the <a href="https://w3c-ccg.github.io/security-vocab/#blockchainAccountId"><code>blockchainAccountId</code></a>
+					as specified in the <a href="https://w3c-ccg.github.io/security-vocab/">Security Vocab</a>.
+					A DID resolver could take the example DID and generate the following
+					DID document without incorporating any data from blockchain
+					transactions:
+				</p>
+				<code><pre>
 {
   "@context": "https://www.w3.org/ns/did/v1",
   "id": "did:tz:mainnet:tz1TzrmTBSuiVHV2VfMnGRMYvTEPCP42oSM8",
@@ -404,108 +431,115 @@ digit       = %x30-39  ; 0-9
     "blockchainAccountId": "tz1TzrmTBSuiVHV2VfMnGRMYvTEPCP42oSM8@tezos:mainnet"
   }]
 }
-    </pre></code>
-    <p> However, the DID resolver must then check the live specified Tezos
-        blockchain instance for a DID Manager, which is defined in the next
-        section.
-    </p>
-    </section>
-    <section> <!-- h4 -->
-    <h4>Note: undefined LD-Proof signature suites ("type") for tz1/tz2/tz3</h4>
-    <p>This is related to the example entries found for 
-       <a href="https://w3c-ccg.github.io/security-vocab/#blockchainAccountId"><code>blockchainAccountId</code></a>.
-       We need to define the <code>type</code> for use with Ed25519-based
-       <code>tz1</code> Tezos accounts. We should also consider inclusion of
-       <code>tezosAddress</code> for the secp256k1/ECDSA-based
-       <code>tz2</code> into the
-       <a href="https://github.com/decentralized-identity/EcdsaSecp256k1RecoverySignature2020">EcdsaSecp256k1RecoverySignature</a> LD-Proof signature suite.
-       We still need to figure out how the P-256-based <code>tz3</code> fits
-       into existing signature suites, if any.</p>
-    </section> <!-- h4 -->
+				</pre></code>
+				<p>
+					However, the DID resolver must then check the live specified Tezos
+					blockchain instance for a DID Manager, which is defined in the next
+					section.
+				</p>
+			</section>
+			<section> <!-- h4 -->
+				<h4>Note: undefined LD-Proof signature suites ("type") for tz1/tz2/tz3</h4>
+				<p>This is related to the example entries found for 
+					 <a href="https://w3c-ccg.github.io/security-vocab/#blockchainAccountId"><code>blockchainAccountId</code></a>.
+					 We need to define the <code>type</code> for use with Ed25519-based
+					 <code>tz1</code> Tezos accounts. We should also consider inclusion of
+					 <code>tezosAddress</code> for the secp256k1/ECDSA-based
+					 <code>tz2</code> into the
+					 <a href="https://github.com/decentralized-identity/EcdsaSecp256k1RecoverySignature2020">EcdsaSecp256k1RecoverySignature</a> LD-Proof signature suite.
+					 We still need to figure out how the P-256-based <code>tz3</code> fits
+					 into existing signature suites, if any.</p>
+			</section> <!-- h4 -->
     </section> <!-- h3 -->
     <section> <!-- h3 -->
-    <h3>DID Manager Smart Contract</h3>
-    <p> DID Managers are smart contracts on the Tezos blockchain that implement
-        TZIP-19, with Michelson annotations satisfying the following abstract
-        function interface:
-    </p>
-    <code><pre>
+			<h3>DID Manager Smart Contract</h3>
+			<p>
+				DID Managers are smart contracts on the Tezos blockchain that implement
+				TZIP-19, with Michelson annotations satisfying the following abstract
+				function interface:
+			</p>
+			<code><pre>
 rotateAuthentication :: (VerificationMethod, RotationSignature) => ()
 getAuthentication :: () => VerificationMethod
 rotateService :: (Service, RotationSignature) => ()
 getService :: () => Service
-    </pre></code>
+			</pre></code>
 
-    <p> <code>rotateAuthentication</code> updates the verification method used
-        for authentication, such as a public key or public key digest along
-        with its verification method type. It may be called by anyone, but
-        requires a valid <code>RotationSignature</code>. This function is used
-        by the update operation to modify the <code>authentication</code>
-        property in a DID document.
-    </p>
+			<p>
+				<code>rotateAuthentication</code> updates the verification method used
+				for authentication, such as a public key or public key digest along
+				with its verification method type. It may be called by anyone, but
+				requires a valid <code>RotationSignature</code>. This function is used
+				by the update operation to modify the <code>authentication</code>
+				property in a DID document.
+			</p>
 
-    <p> <code>rotateService</code> updates the single service endpoint, which is
-        a URI with a service endpoint type. It may be called by anyone, but
-        requires a valid <code>RotationSignature</code>. This function is used
-        by the update operation to modify the <code>service</code> property in
-        a DID document.
-    </p>
+			<p>
+				<code>rotateService</code> updates the single service endpoint, which
+				is a URI with a service endpoint type. It may be called by anyone, but
+				requires a valid <code>RotationSignature</code>. This function is used
+				by the update operation to modify the <code>service</code> property in
+				a DID document.
+			</p>
 
-    <p> The <code>RotationSignature</code> input parameter contains the
-        signature of the data produced by concatenating the byte
-        representations of the current value's message digest, next value,
-        current chain identifier, and current rotation count. Including the
-        chain identifier prevents impersonating the controller on a different
-        chain. The current rotation count is defined as the sum total of
-        successfully executed calls to both <code>rotateAuthentication</code>
-        and <code>rotateService</code> to date. For example, if each function
-        were successfully executed exactly once, the current rotation count
-        would be two.
-    </p>
+			<p>
+				The <code>RotationSignature</code> input parameter contains the
+				signature of the data produced by concatenating the byte
+				representations of the current value's message digest, next value,
+				current chain identifier, and current rotation count. Including the
+				chain identifier prevents impersonating the controller on a different
+				chain. The current rotation count is defined as the sum total of
+				successfully executed calls to both <code>rotateAuthentication</code>
+				and <code>rotateService</code> to date. For example, if each function
+				were successfully executed exactly once, the current rotation count
+				would be two.
+			</p>
 
-    <p> <code>getAuthentication</code> returns the verification method for
-        authentication. This result is used to populate the
-        <code>authentication</code> section in the DID document during
-        resolution.
-    </p>
+			<p>
+				<code>getAuthentication</code> returns the verification method for
+				authentication. This result is used to populate the
+				<code>authentication</code> section in the DID document during
+				resolution.
+			</p>
 
-    <p> <code>getService</code> returns the single service endpoint. This
-        result is used to populate the <code>service</code> section in the DID
-        document during resolution.
-    </p>
-    <section>
-    <h4>Identifying the DID Manager</h4>
-    <p> The process for reliably identifying the corresponding DID Manager will
-        differ between account address-based DIDs and smart contract
-        address-based DIDs. In both cases, the address is first extracted from
-        the DID using the <code>address</code> ABNF rule.
-    </p>
+			<p>
+				<code>getService</code> returns the single service endpoint. This result
+				is used to populate the <code>service</code> section in the DID document
+				during resolution.
+			</p>
+			<section>
+				<h4>Identifying the DID Manager</h4>
+				<p> The process for reliably identifying the corresponding DID Manager will
+						differ between account address-based DIDs and smart contract
+						address-based DIDs. In both cases, the address is first extracted from
+						the DID using the <code>address</code> ABNF rule.
+				</p>
 
-    <p> <b>Account address-based DIDs</b>: In the case of an account address,
-        the DID Manager smart contract is defined as the first smart contract
-        that (1) is deployed by the account and (2) implements TZIP-19. The
-        resolver must exhaustively query for any matching smart contract by
-        either by (recommended) using a Tezos transaction indexer or scanning
-        all Tezos transactions directly.
-    </p>
+				<p> <b>Account address-based DIDs</b>: In the case of an account address,
+						the DID Manager smart contract is defined as the first smart contract
+						that (1) is deployed by the account and (2) implements TZIP-19. The
+						resolver must exhaustively query for any matching smart contract by
+						either by (recommended) using a Tezos transaction indexer or scanning
+						all Tezos transactions directly.
+				</p>
 
-    <p> <b>Smart contract address-based DIDs</b>: In the case of a smart
-        contract address, the smart contract itself is the DID Manager, and
-        must therefore implement TZIP-19. If it does not implement TZIP-19,
-        then resolution will fail. 
-    </p>
-    </section>
-    <section>
-    <h4>Deriving DID Documents</h4>
-    <p> The verification method used for authentication is produced by calling
-        the <code>getAuthentication</code> smart contract function. No input
-        parameters are required. The single service endpoint and its type is
-        retrieved by calling the <code>getService</code> smart contract
-        function.  These values are the only smart contract-sourced data used
-        for Tezos DID resolution, and are substituted into a valid DID
-        document.
-    </p>
-<code><pre>
+				<p> <b>Smart contract address-based DIDs</b>: In the case of a smart
+						contract address, the smart contract itself is the DID Manager, and
+						must therefore implement TZIP-19. If it does not implement TZIP-19,
+						then resolution will fail. 
+				</p>
+			</section>
+			<section>
+				<h4>Deriving DID Documents</h4>
+				<p> The verification method used for authentication is produced by calling
+						the <code>getAuthentication</code> smart contract function. No input
+						parameters are required. The single service endpoint and its type is
+						retrieved by calling the <code>getService</code> smart contract
+						function.  These values are the only smart contract-sourced data used
+						for Tezos DID resolution, and are substituted into a valid DID
+						document.
+				</p>
+				<code><pre>
 {
   "@context": "https://www.w3.org/ns/did/v1",
   "id": "did:tz:mainnet:tz1TzrmTBSuiVHV2VfMnGRMYvTEPCP42oSM8",
@@ -521,50 +555,51 @@ getService :: () => Service
     "serviceEndpoint": "tezos-storage://KT1QDFEu8JijYbsJqzoXq7mKvfaQQamHD1kX/listing"
   }]
 }
-</pre></code>
-
-    </section>
+				</pre></code>
+			</section> <!-- h4 -->
     </section> <!-- h3 -->
     <section> <!-- h3 -->
-    <h3>Off-Chain DID Document Updates</h3>
-    <p> Off-chain updates to the DID document are possible by specifying one or
-        more signed patches in the DID resolution input metadata property named
-        <code>updates</code> containing an array. If updates are present, they
-        must all be of the same type.
-    </p>
-    <p> The two allowed types for updates are (1) unsigned Tezos transactions
-        with valid <code>RotationSignature</code> parameter values that would
-        correctly update the DID Manager if signed and cleared in a block and
-        (2)
-        <a href="https://github.com/decentralized-identity/did-spec-extensions/blob/master/parameters/signed-ietf-json-patch.md"><code>signed-ietf-json-patch</code></a>
-        restricted to changes possible through the DID Manager abstract
-        function interface. These two types of updates have different privacy
-        and security implications.
-    </p>
-    <section>
-    <h4>Unsigned Tezos transaction updates</h4>
-    </section>
-    <section>
-    <h4><code>signed-ietf-json-patch</code> updates</h4>
-    </section>
-    </section> <!-- h3 -->
-    </section> <!-- h2 -->
-    <section>
-      <h2>Operations</h2>
-      <p> <b>This section is a WIP, please refrain from commenting until this
-          message is gone.</b></p>
+			<h3>Off-Chain DID Document Updates</h3>
+			<p>
+				Off-chain updates to the DID document are possible by specifying one or
+				more signed patches in the DID resolution input metadata property named
+				<code>updates</code> containing an array. If updates are present, they
+				must all be of the same type.
+			</p>
+			<p>
+				The two allowed types for updates are (1) unsigned Tezos transactions
+				with valid <code>RotationSignature</code> parameter values that would
+				correctly update the DID Manager if signed and cleared in a block and
+				(2)
+				<a href="https://github.com/decentralized-identity/did-spec-extensions/blob/master/parameters/signed-ietf-json-patch.md"><code>signed-ietf-json-patch</code></a>
+				restricted to changes possible through the DID Manager abstract
+				function interface. These two types of updates have different privacy
+				and security implications.
+			</p>
+			<section>
+				<h4>Unsigned Tezos transaction updates</h4>
+			</section>
+			<section>
+				<h4><code>signed-ietf-json-patch</code> updates</h4>
+			</section>
+		</section> <!-- h3 -->
+	</section> <!-- END architecture -->
+	<section> <!-- BEGIN operations -->
+		<h2>Operations</h2>
+		<p> <b>This section is a WIP, please refrain from commenting until this
+				message is gone.</b></p>
 
-      <section>
-      <h3>Create (Register)</h3>
-      <p>Tiered creation across DID resolution layers:</p>
-      <ol>
-        <li>DID document is implied</li>
-        <li>Deploy DID manager smart contract</li>
-        <li>Create off-chain DID document updates</li>
-      </ol>
-      </section>
+		<section>
+			<h3>Create (Register)</h3>
+			<p>Tiered creation across DID resolution layers:</p>
+			<ol>
+				<li>DID document is implied</li>
+				<li>Deploy DID manager smart contract</li>
+				<li>Create off-chain DID document updates</li>
+			</ol>
+		</section>
 
-      <section>
+		<section>
       <h3>Read (Resolve)</h3>
       <p>Tiered resolution across DID resolution layers:</p>
       <ol>
@@ -572,28 +607,28 @@ getService :: () => Service
         <li>Lookup and apply on-chain DID manager</li>
         <li>Apply any off-chain DID document updates</li>
       </ol>
-      </section>
+		</section>
 
-      <section>
+		<section>
       <h3>Update (Replace)</h3>
       <p>Tiered replace across DID resolution layers:</p>
       <section>
-      <h4>On-chain DID manager</h4>
-      <ol>
-        <li>Lookup on-chain DID manager</li>
-        <li>Create rotation event</li>
-        <li>Ask for the user's signature</li>
-	<li>Apply the rotation by calling the appropriate entrypoint of the DID
-            manager</li>
-      </ol>
-      </section>
-      <section>
-      <h4>Off-chain DID document updates</h4>
-      <p> Apply any off-chain DID document updates.</p>
-      </section>
-      </section>
+				<h4>On-chain DID manager</h4>
+				<ol>
+					<li>Lookup on-chain DID manager</li>
+					<li>Create rotation event</li>
+					<li>Ask for the user's signature</li>
+		<li>Apply the rotation by calling the appropriate entrypoint of the DID
+							manager</li>
+				</ol>
+			</section>
+			<section>
+				<h4>Off-chain DID document updates</h4>
+				<p> Apply any off-chain DID document updates.</p>
+			</section>
+		</section>
 
-      <section>
+		<section>
       <h3>Delete (Deactivate)</h3>
       <p> The Tezos DID manager contract can be updated to remove services and
 	  verification methods. Although inactive in DID resolution, these data
@@ -601,80 +636,87 @@ getService :: () => Service
 	  nature.
       </p>
       <section>
-      <h4>On-chain DID manager</h4>
-      <p>Update the DID manager with empty verification methods and services.</p>
+				<h4>On-chain DID manager</h4>
+				<p>Update the DID manager with empty verification methods and services.</p>
       </section>
       <section>
-      <h4>Off-chain DID document updates</h4>
+				<h4>Off-chain DID document updates</h4>
       </section>
       <section>
-      <h4>Null rotation</h4>
+				<h4>Null rotation</h4>
       </section>
-      </section>
-    </section>
+		</section>
+	</section> <!-- END operations -->
 
-    <section>
-      <h2>Security & Privacy</h2>
-      <section>
+	<section>
+		<h2>Security & Privacy</h2>
+		<section>
       <h3>Security Considerations</h3>
       <section>
-      <h4>Eavesdropping</h4>
-      <p> All exchanged data is public, except for off-chain rotations, which
-	  will conform to the unspecified underlying architecture and its modes
-	  of communications.
-      </p>
+				<h4>Eavesdropping</h4>
+				<p>
+					All exchanged data is public, except for off-chain rotations, which
+					will conform to the unspecified underlying architecture and its modes
+					of communications.
+				</p>
       </section>
       <section>
-      <h4>Replay</h4>
-      <p> All signed rotation events contain the chain ID, so an attacker is
-	  unable to deploy and replay the DID manager on a different chain.
-      </p>
+				<h4>Replay</h4>
+				<p>
+					All signed rotation events contain the chain ID, so an attacker is
+					unable to deploy and replay the DID manager on a different chain.
+				</p>
+			</section>
+			<section>
+				<h4>Message Insertion</h4>
+				<p>
+					Rotation events are signed. However, if using the unsigned
+					transaction option with pre-signed rotation events, anyone may submit
+					the updates to the Tezos blockchain if they receive access to the
+					rotation events.  This behavior can be eliminated by using signed
+					JSON patches instead of unsigned transactions, which have use cases
+					such as desired transaction submission by a third party without key
+					sharing or multisig.
+				</p>
+			</section>
+			<section>
+				<h4>Deletion</h4>
+				<p>
+					With the lack of real deletion, it means that the history of
+					rotations (and thus previous verification methods and services) will
+					stay public on the blockchain.
+				</p>
       </section>
       <section>
-      <h4>Message Insertion</h4>
-      <p> Rotation events are signed. However, if using the unsigned transaction
-	  option with pre-signed rotation events, anyone may submit the updates
-	  to the Tezos blockchain if they receive access to the rotation
-	  events. This behavior can be eliminated by using signed JSON patches
-	  instead of unsigned transactions, which have use cases such as
-	  desired transaction submission by a third party without key sharing
-	  or multisig.
-      </p>
+				<h4>Modification</h4>
+				<p>
+					Similarly to the deletion, as the DID manager resides on a
+					blockchain, it means that previous rotations will be forever public.
+				</p>
       </section>
       <section>
-      <h4>Deletion</h4>
-      <p> With the lack of real deletion, it means that the history of rotations
-          (and thus previous verification methods and services) will stay public
-          on the blockchain.
-      </p>
+				<h4>Man-in-the-Middle</h4>
+				<p>
+					When a third party creates or update the DID manager, the event has to
+					have a valid signature, meaning the user is in control of any change.
+					However, if an attacker obtains an uncleared valid transaction with a
+					signed rotation event, the third party can choose the timing of the
+					transaction submission.
+				</p>
       </section>
       <section>
-      <h4>Modification</h4>
-      <p> Similarly to the deletion, as the DID manager resides on a blockchain,
-          it means that previous rotations will be forever public.
-      </p>
-      </section>
-      <section>
-      <h4>Man-in-the-Middle</h4>
-      <p> When a third party creates or update the DID manager, the event has to
-	  have a valid signature, meaning the user is in control of any change.
-	  However, if an attacker obtains an uncleared valid transaction with a
-	  signed rotation event, the third party can choose the timing of the
-	  transaction submission.
-      </p>
-      </section>
-      <section>
-      <h4>Denial of Service</h4>
-      <p> The only remote request made during DID resolution is the DID
-	  management interactions, and as it is a smart contract it benefits
-	  from the Tezos blockchain's guarantees of consistency and
-	  availability. If Tezos nodes and indexing services are compromised,
-	  so will be this DID method. Furthermore, if using unsigned
-	  transactions with valid rotation event signatures, it is possible for
-	  an attacker who obtains these transactions to clear them to the Tezos
-	  blockchain even if the original DID controller wished to pursue an
-	  alternate rotation history.
-      </p>
+				<h4>Denial of Service</h4>
+				<p>
+					The only remote request made during DID resolution is the DID
+					management interactions, and as it is a smart contract it benefits
+					from the Tezos blockchain's guarantees of consistency and
+					availability. If Tezos nodes and indexing services are compromised,
+					so will be this DID method. Furthermore, if using unsigned
+					transactions with valid rotation event signatures, it is possible for
+					an attacker who obtains these transactions to clear them to the Tezos
+					blockchain even if the original DID controller wished to pursue an
+					alternate rotation history.
+				</p>
       </section>
       <section>
       <h4>Residual Risks</h4>
