@@ -57,6 +57,7 @@ A smart contract conforming to TZIP-19 must implement the following entrypoints
 conforming to the specified functional requirements.
 
 #### `rotate_authentication`
+ReLIGO code:
 ```
 type verification_method = address;
 
@@ -70,12 +71,22 @@ type rotation_event = {
 
 let rotate_authentication : (verification_method, rotation_event, signature, storage) => storage;
 ```
+Michelson code:
+```
+(pair %rotateAuthentication
+   (pair address
+         (pair (pair (pair (bytes %current_chain) (bytes %current_value_digest))
+                     (pair (bytes %next_value_digest) (key %public_key)))
+               (nat %rotation_count)))
+   signature)
+```
 
 Functional requirements:
 - The target of the `signature` is the result of `PACK` applied on
   `rotation_event`.
 
 #### `rotate_service`
+ReLIGO code:
 ```
 type service = {
     type             : string,
@@ -84,6 +95,16 @@ type service = {
 
 // rotation_event is reused from the rotate_authentication section.
 let rotate_service : (service, rotation_event, signature, storage) => storage;
+```
+
+Michelson code:
+```
+(pair %rotateService
+   (pair (pair (string %endpoint) (string %type_))
+         (pair (pair (pair (bytes %current_chain) (bytes %current_value_digest))
+                     (pair (bytes %next_value_digest) (key %public_key)))
+               (nat %rotation_count)))
+   signature)
 ```
 
 Functional requirements:
