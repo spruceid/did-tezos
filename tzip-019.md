@@ -72,8 +72,6 @@ let rotate_authentication : (verification_method, rotation_event, signature, sto
 ```
 
 Functional requirements:
-- The result of calling `get_authentication` is equivalent to the result of
-  `HASH_KEY` applied to `rotation_event.public_key`.
 - The target of the `signature` is the result of `PACK` applied on
   `rotation_event`.
 
@@ -89,8 +87,6 @@ let rotate_service : (service, rotation_event, signature, storage) => storage;
 ```
 
 Functional requirements:
-- The result of calling `get_authentication` is equivalent to the result of
-  `HASH_KEY` applied to `rotation_event.public_key`.
 - The target of the `signature` is the result of `PACK` applied on
   `rotation_event`.
 
@@ -163,7 +159,8 @@ metadata (defined in TZIP-16).
 ```
 
 > The code for each view is provided as examples and is not part of the
-> specifications.
+> specifications. However, the name of the implementations, as their types, is
+> part of the specifications.
 
 
 
