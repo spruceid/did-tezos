@@ -57,6 +57,10 @@ A smart contract conforming to TZIP-19 must implement the following entrypoints
 conforming to the specified functional requirements.
 
 #### `rotate_authentication`
+A verification method is storage in the DID Manager as a link to the user. In
+this case it is an address to the Tezos account that has ownership of the DID
+Manager.
+
 ReLIGO code:
 ```
 type verification_method = address;
@@ -71,6 +75,7 @@ type rotation_event = {
 
 let rotate_authentication : (verification_method, rotation_event, signature, storage) => storage;
 ```
+
 Michelson code:
 ```
 (pair %rotateAuthentication
