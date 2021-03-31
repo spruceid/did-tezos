@@ -63,7 +63,7 @@ const argv = yargs
     alias: 'u',
     description: 'Tezos node.',
     type: 'string',
-    default: 'https://api.tez.ie/rpc/mainnet',
+    default: 'https://mainnet.smartpy.io/',
   })
   .option('faucet_key_file', {
     alias: 'f',
@@ -108,23 +108,22 @@ async function originate() {
     const contract = fs.readFileSync('../contract.michelson', 'utf8')
 
     const metadataBigMap = new taquito.MichelsonMap();
-    metadataBigMap.set("", tzip16.char2Bytes("https://raw.githubusercontent.com/spruceid/did-tezos/tzip19-offchain/contract/taquito/tzip019-metadata.json"));
+    metadataBigMap.set("", tzip16.char2Bytes("ipfs://QmemdKdgCBhhr6hZC3TzsyjsMT8mVjhWvNsP37D4uUNpSP"));
 
     let originationOp = await Tezos.contract.originate({
       code: contract,
       storage: {
-        active_key: await Tezos.signer.publicKey(),
+        owner: await Tezos.signer.publicKeyHash(),
         metadata: metadataBigMap,
-        rotation_count: '0',
         service: {
           endpoint: argv.service_endpoint,
           type_: argv.service_type,
         },
-        verification_method: await Tezos.signer.publicKeyHash(),
+        verification_method: `did:pkh:tz:${await Tezos.signer.publicKeyHash()}#TezosMethod2021`,
       },
     });
     process.stdout.write(`Waiting for confirmation of origination for ${originationOp.contractAddress}...\n`);
-    // originationOp.contract();
+    await originationOp.confirmation(3);
     process.stdout.write(`Origination completed.`);
 
   } catch (error) {
@@ -138,38 +137,7 @@ async function rotate_auth() {
     let contract = await
       Tezos.contract
         .at(argv.contract);
-    // TODO Reads the storage directly, maybe not good.
-    let storage = await contract.storage();
-    let chain_id = await Tezos.rpc.getChainId();
-    let new_verification_method = argv.address;
-    let new_rotation_count = parseInt(storage.rotation_count) + 1;
-    let public_key = await Tezos.signer.publicKey();
-
-    const p = new taquito.MichelCodecParser(Tezos);
-
-    const dataChainID = await p.parseMichelineExpression(`"${chain_id}"`);
-    const typeChainID = await p.parseMichelineExpression(`chain_id`);
-    const packChainID = await Tezos.rpc.packData({data: dataChainID, type: typeChainID});
-
-    const data = `(Pair (Pair (Pair 0x${packChainID.packed} 0x${tzip16.char2Bytes(storage.verification_method)})
-                                (Pair 0x${tzip16.char2Bytes(new_verification_method)} "${public_key}"))
-                          ${new_rotation_count})`
-    const type = `(pair (pair (pair (bytes %current_chain) (bytes %current_value_digest))
-                                (pair (bytes %next_value_digest) (key %public_key)))
-                          (nat %rotation_count))`;
-    const dataJSON = await p.parseMichelineExpression(data)
-    const typeJSON = await p.parseMichelineExpression(type)
-    const pack = await Tezos.rpc.packData({data: dataJSON, type: typeJSON});
-    const sign = await Tezos.signer.sign(pack.packed);
-
-    let op = await contract.methods.rotateAuthentication(
-      new_verification_method,
-      packChainID.packed,
-      tzip16.char2Bytes(storage.verification_method),
-      tzip16.char2Bytes(new_verification_method),
-      public_key,
-      new_rotation_count,
-      sign.sig).send();
+    let op = await contract.methods.auth(argv.address).send();
     process.stdout.write(`Awaiting for ${op.hash} to be confirmed...\n`);
     await op.confirmation(3);
     let hash = op.hash;
@@ -186,47 +154,7 @@ async function rotate_service() {
     let contract = await
       Tezos.contract
         .at(argv.contract);
-    // TODO Reads the storage directly, maybe not good.
-    let storage = await contract.storage();
-    let chain_id = await Tezos.rpc.getChainId();
-    let new_rotation_count = parseInt(storage.rotation_count) + 1;
-    let public_key = await Tezos.signer.publicKey();
-
-    const p = new taquito.MichelCodecParser(Tezos);
-
-    const dataChainID = await p.parseMichelineExpression(`"${chain_id}"`);
-    const typeChainID = await p.parseMichelineExpression(`chain_id`);
-    const packChainID = await Tezos.rpc.packData({data: dataChainID, type: typeChainID});
-
-    const dataService = await p.parseMichelineExpression(`(Pair "${argv.service_endpoint}" "${argv.service_type}")`);
-    const typeService = await p.parseMichelineExpression(`(pair string string)`);
-    const packService = await Tezos.rpc.packData({data: dataService, type: typeService});
-
-    let old_service = storage.service;
-    const dataOldService = await p.parseMichelineExpression(`(Pair "${old_service.endpoint}" "${old_service.type_}")`);
-    const typeOldService = await p.parseMichelineExpression(`(pair string string)`);
-    const packOldService = await Tezos.rpc.packData({data: dataOldService, type: typeOldService});
-
-    const data = `(Pair (Pair (Pair 0x${packChainID.packed} 0x${packOldService.packed})
-                                (Pair 0x${packService.packed} "${public_key}"))
-                          ${new_rotation_count})`
-    const type = `(pair (pair (pair bytes bytes)
-                              (pair bytes key))
-                        nat)`;
-    const dataJSON = await p.parseMichelineExpression(data)
-    const typeJSON = await p.parseMichelineExpression(type)
-    const pack = await Tezos.rpc.packData({data: dataJSON, type: typeJSON});
-    const sign = await Tezos.signer.sign(pack.packed);
-
-    let op = await contract.methods.rotateService(
-      argv.service_endpoint,
-      argv.service_type,
-      packChainID.packed,
-      packOldService.packed,
-      packService.packed,
-      public_key,
-      new_rotation_count,
-      sign.sig).send();
+    let op = await contract.methods.service(argv.service_type, argv.service_endpoint).send();
     process.stdout.write(`Awaiting for ${op.hash} to be confirmed...\n`);
     await op.confirmation(3);
     let hash = op.hash;
