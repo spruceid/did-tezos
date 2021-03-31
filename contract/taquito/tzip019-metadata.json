@@ -18,9 +18,8 @@
             },
             "code":[
               {"prim": "CDR"},
-              {"prim": "CAR"},
               {"prim": "CDR"},
-              {"prim": "CDR"}
+              {"prim": "CAR"}
             ],
             "parameter":{
               "prim": "unit"
@@ -37,11 +36,12 @@
           "michelsonStorageView":{
             "annotations":[ ],
             "returnType":{
-              "prim":"address",
+              "prim":"string",
               "args":[ ],
               "annots": ["%verification_method"]
             },
             "code":[
+              {"prim": "CDR"},
               {"prim": "CDR"},
               {"prim": "CDR"}
             ],

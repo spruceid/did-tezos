@@ -1,11 +1,4 @@
-type verification_method = address;
-type rotation_event = {
-    public_key           : key,
-    current_value_digest : bytes,
-    next_value_digest    : bytes,
-    current_chain        : bytes,
-    rotation_count       : nat
-};
+type verification_method = string;
 
 type service = {
     type_    : string,
@@ -13,70 +6,52 @@ type service = {
 };
 
 type storage = {
-    rotation_count      : nat,
-    active_key          : key,
-    verification_method : address,
+    owner               : address,
+    verification_method : verification_method,
     service             : service,
     metadata            : big_map(string, bytes)
 };
 
-let rotate_authentication = ((vm, rot, sgn, strg): (verification_method, rotation_event, signature, storage)): storage => {
-    let sgn_target = Bytes.pack(rot);
-    if (!Crypto.check(strg.active_key, sgn, sgn_target)) { failwith ("Failed signature check."); };
-    if (rot.current_chain != Bytes.pack(Tezos.chain_id)) { failwith ("Invalid chain ID."); };
-    if (rot.rotation_count != strg.rotation_count + 1n) { failwith ("Invalid rotation count."); };
-
-    // TODO Might no be necessary
-    // let cur_vm = switch ((Bytes.unpack(rot.current_value_digest)): option(verification_method)) {
-    //     | Some v => v
-    //     | None => (failwith ("Invalid current verification method."))
-    // };
-    // if (cur_vm != strg.verification_method) { failwith ("Current vm differs from current vm.") };
-    // let next_vm = switch ((Bytes.unpack(rot.next_value_digest)): option(verification_method)) {
-    //     | Some v => v
-    //     | None => (failwith ("Invalid next verification method."))
-    // };
-    // if (next_vm != vm) { failwith ("Next vm differs from rotation event vm.") };
-
-
+let rotate_authentication = ((vm, strg): (verification_method, storage)): storage => {
     {
-        rotation_count      : rot.rotation_count,
-        active_key          : rot.public_key,
+        owner               : strg.owner,
         verification_method : vm,
         service             : strg.service,
         metadata            : strg.metadata
     };
 };
 
-// rotation_event and signature are reused from the rotate_authentication section.
-let rotate_service = ((srv, rot, sgn, strg): (service, rotation_event, signature, storage)): storage => {
-    let sgn_target = Bytes.pack(rot);
-    if (!Crypto.check(strg.active_key, sgn, sgn_target)) { failwith ("Failed signature check."); };
-    if (rot.current_chain != Bytes.pack(Tezos.chain_id)) { failwith ("Invalid chain ID."); };
-    if (rot.rotation_count != strg.rotation_count + 1n) { failwith ("Invalid rotation count."); };
-
-    // TODO Check the service in the rotation event like for rotate_authentication?
-
+let rotate_service = ((srv, strg): (service, storage)): storage => {
     {
-        rotation_count      : rot.rotation_count,
-        active_key          : strg.active_key,
+        owner               : strg.owner,
         verification_method : strg.verification_method,
         service             : srv,
         metadata            : strg.metadata
     };
 };
 
+let rotate_owner = ((ownr, strg): (address, storage)): storage => {
+    {
+        owner               : ownr,
+        verification_method : strg.verification_method,
+        service             : strg.service,
+        metadata            : strg.metadata
+    };
+};
+
 type parameter =
-| RotateAuthentication ((verification_method, rotation_event, signature))
-| RotateService ((service, rotation_event, signature));
+[@layout:comb]
+| Owner (address)
+| Auth (verification_method)
+| Service (service);
 type return = (list (operation), storage);
 
-let main = ((action, store): (parameter, storage)) : return =>
+let main = ((action, store): (parameter, storage)) : return => {
+  if (Tezos.sender != store.owner) { failwith ("Unauthorised sender."); };
+  if (Tezos.amount > 0tz) { failwith ("Tez not accepted."); };
   switch (action) {
-  | RotateAuthentication (l) => ([] : list (operation), rotate_authentication (l[0], l[1], l[2], store))
-  | RotateService (l) => ([] : list (operation), rotate_service (l[0], l[1], l[2], store))
+  | Auth (l) => ([] : list (operation), rotate_authentication (l, store))
+  | Service (l) => ([] : list (operation), rotate_service (l, store))
+  | Owner (l) => ([] : list (operation), rotate_owner (l, store))
   };
-
-let get_service = (strg: storage): service => {
-    strg.service;
 };

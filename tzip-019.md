@@ -54,43 +54,22 @@ For additional background, please consider
 
 ### Entrypoints and Functional Requirements
 A smart contract conforming to TZIP-19 must implement the following entrypoints
-conforming to the specified functional requirements.
+to allow rotation of the three key pieces of information stored.
 
-#### `rotate_authentication`
-A verification method is storage in the DID Manager as a link to the user. In
-this case it is an address to the Tezos account that has ownership of the DID
-Manager.
-
+#### Authentication rotation
 ReLIGO code:
 ```
-type verification_method = address;
+type verification_method = string;
 
-type rotation_event = {
-    public_key           : key,
-    current_value_digest : bytes,
-    next_value_digest    : bytes,
-    current_chain        : bytes,
-    rotation_count       : nat
-};
-
-let rotate_authentication : (verification_method, rotation_event, signature, storage) => storage;
+let auth : (verification_method, storage) => storage;
 ```
 
 Michelson code:
 ```
-(pair %rotateAuthentication
-   (pair address
-         (pair (pair (pair (bytes %current_chain) (bytes %current_value_digest))
-                     (pair (bytes %next_value_digest) (key %public_key)))
-               (nat %rotation_count)))
-   signature)
+(string %auth)
 ```
 
-Functional requirements:
-- The target of the `signature` is the result of `PACK` applied on
-  `rotation_event`.
-
-#### `rotate_service`
+#### Service Endpoint Rotation
 ReLIGO code:
 ```
 type service = {
@@ -98,23 +77,26 @@ type service = {
     service_endpoint : string
 };
 
-// rotation_event is reused from the rotate_authentication section.
-let rotate_service : (service, rotation_event, signature, storage) => storage;
+let service : (service,storage) => storage;
 ```
 
 Michelson code:
 ```
-(pair %rotateService
-   (pair (pair (string %endpoint) (string %type_))
-         (pair (pair (pair (bytes %current_chain) (bytes %current_value_digest))
-                     (pair (bytes %next_value_digest) (key %public_key)))
-               (nat %rotation_count)))
-   signature)
+(pair %service (string %endpoint) (string %type_))
 ```
 
-Functional requirements:
-- The target of the `signature` is the result of `PACK` applied on
-  `rotation_event`.
+### Owner Rotation
+ReLIGO code:
+```
+type owner = address;
+
+let owner : (owner,storage) => storage;
+```
+
+Michelson code:
+```
+(address %owner)
+```
 
 ### Metadata (off-chain views)
 In order to actually retrieve the service endpoint and the verification method
@@ -127,7 +109,7 @@ metadata (defined in TZIP-16).
 {
   "name":"DID Manager",
   "interfaces":[
-    "TZIP-19"
+    "TZIP-019"
   ],
   "views":[
     {
@@ -138,15 +120,14 @@ metadata (defined in TZIP-16).
             "returnType":{
               "prim":"pair",
               "args":[
-                {"prim": "string", "annots": ["%service_endpoint"]},
-                {"prim": "string", "annots": ["%type"]}
+                {"prim": "string", "annots": ["%endpoint"]},
+                {"prim": "string", "annots": ["%type_"]}
               ]
             },
             "code":[
               {"prim": "CDR"},
-              {"prim": "CAR"},
               {"prim": "CDR"},
-              {"prim": "CDR"}
+              {"prim": "CAR"}
             ],
             "parameter":{
               "prim": "unit"
@@ -163,11 +144,12 @@ metadata (defined in TZIP-16).
           "michelsonStorageView":{
             "annotations":[ ],
             "returnType":{
-              "prim":"address",
+              "prim":"string",
               "args":[ ],
               "annots": ["%verification_method"]
             },
             "code":[
+              {"prim": "CDR"},
               {"prim": "CDR"},
               {"prim": "CDR"}
             ],
